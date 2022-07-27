@@ -1,0 +1,274 @@
+import { Component } from 'vue'
+import {
+  Pagination,
+  Table as ElementTable,
+  TableColumn as ElementTableColumn,
+  Tooltip,
+} from 'element-ui'
+import { ElFormItem } from 'element-ui/types/form-item'
+import { ElInput } from 'element-ui/types/input'
+import { ElOption } from 'element-ui/types/option'
+import { ElSelect } from 'element-ui/types/select'
+import { ElTable } from 'element-ui/types/table'
+import { ElTooltip } from 'element-ui/types/tooltip'
+import { ElTableColumn } from 'element-ui/types/table-column'
+import { ElPagination } from 'element-ui/types/pagination'
+
+// 屏蔽 Tooltip.content 传入组件警告
+// @ts-ignore
+Tooltip.props.content = [String, Object]
+
+export interface TableProps<RecordType = KVA> {
+  columns: (Partial<ElTableColumn> & KVA & {
+    // Form 元素
+    // 与元素签名一致
+    input?: Partial<ElInput> & { rules?: ElFormItem['rules'] }
+    select?: Partial<ElSelect> & {
+      options:
+      | (OptionRecord & Partial<ElOption>)[]
+      | ((...args: Parameters<TableColumn<RecordType>['render']>) => (OptionRecord & Partial<ElOption>)[])
+      rules?: ElFormItem['rules']
+    }
+    // TODO: datePicker?: Partial<ElDatePicker>
+
+    tooltip?: Partial<ElTooltip & {
+      /** 自定义渲染 content 支持 JSX.Element */
+      render: TableColumn<RecordType>['render']
+    }>
+    render?: (props: {
+      $index: number
+      /** 当前列属性 */
+      column: TableColumn<RecordType>
+      /** 当前列数据 */
+      row: RecordType
+    }) => JSX_ELEMENT
+  })[]
+  data?: RecordType[]
+  pagination?: null | {
+    /** Current page number */
+    currentPage: number
+    /** Item count of each page */
+    pageSize: number
+    /** Total item count */
+    total: number
+    /** 泛化 */
+    props?: Partial<ElPagination & KVA>
+  }
+  /** 返回 false 代表打断请求 */
+  query?: (pagination: TablePagination) => false | ({ data: RecordType[] } & TablePagination)
+  handle?: {
+    refresh: (pagination?: TablePagination) => void
+    pagination: TablePagination
+  }
+  /** 泛化 */
+  props?: Partial<ElTable & KVA>
+}
+
+export type TableColumn<RecordType = KVA> = TableProps<RecordType>['columns'][0]
+export type TableData<RecordType = KVA> = TableProps<RecordType>['data'][0]
+export type TablePagination = TableProps['pagination']
+export type TableQueryResult<RecordType = KVA> = ReturnType<TableProps<RecordType>['query']>
+export type TableHandle<RecordType = KVA> = TableProps<RecordType>['handle']
+
+// 这里与 export default 类型并不匹配，Vue2 提供的 ts 并不完整
+const TableElementUI: Component<
+  () => {
+    loading: boolean,
+    tableData?: TableData[],
+  },
+  {
+    onCurrentChange: () => void,
+    onSizeChange: () => void,
+  },
+  KVA,
+  TableProps
+> = {
+  name: 'table-element-ui',
+  data() {
+    return {
+      loading: false,
+      tableData: undefined,
+    }
+  },
+  props: {
+    columns: {
+      // @ts-ignore
+      type: Array,
+      default: () => [],
+    },
+    // @ts-ignore
+    data: [Object, Array],
+    // @ts-ignore
+    pagination: [Object, null],
+    // @ts-ignore
+    handle: Object,
+  },
+  created() {
+    const props = this.$props as TableProps
+  },
+  watch: {
+    data: {
+      handler(d) {
+        // 直接传入 data 数据
+        d && (this.tableData = d)
+      },
+      immediate: true,
+    },
+  },
+  methods: {
+    onCurrentChange() { },
+    onSizeChange() { },
+  },
+  render() {
+    const props = this.$props as TableProps
+    const _this = Object.assign(this, { $createElement: arguments[0] })
+
+    return (
+      <div class="table-element-ui">
+        <ElementTable
+          v-loading={this.loading}
+          data={this.tableData}
+          on-selection-change={props.props?.['on-selection-change'] || noop}
+          {...{ props: props.props }}
+        >
+          {props.columns.map((column, index, columns) => (
+            // 1. 修复 type=selection 复选排版错位 BUG
+            // 2. 修复 type=other 更加可控的渲染
+            column.type
+              ? <ElementTableColumn  {...{ props: column }}>{column.render}</ElementTableColumn>
+              : <ElementTableColumn
+                {...{ props: withAutoFixed({ column, index, columns }) }}
+              >
+                {renderColumn.call(_this, column, index)}
+              </ElementTableColumn>
+          ))}
+        </ElementTable>
+        {props.pagination && <Pagination
+          // @ts-ignore
+          background
+          style="margin-top:15px;text-align:right;"
+          layout="total, sizes, prev, pager, next, jumper"
+          page-sizes={[10, 20, 50, 100, 200, 500]}
+          current-page={props.pagination.currentPage}
+          page-size={props.pagination.pageSize}
+          total={props.pagination.total}
+          on-current-change={this.onCurrentChange}
+          on-size-change={this.onSizeChange}
+          {...{ props: props.pagination.props }}
+        />}
+      </div>
+    )
+  }
+}
+
+function noop() { }
+
+// 最后一列如果是 "操作" 自动右侧固定
+function withAutoFixed(args: {
+  column: TableColumn
+  index: number
+  columns: TableColumn[]
+}): TableColumn {
+  if (args.index === args.columns.length - 1 && args.column.label === '操作') {
+    if (!Object.keys(args.column).includes('fixed')) {
+      args.column.fixed = 'right'
+    }
+  }
+  return args.column
+}
+
+// 渲染表格单元格，如果返回值是 Function 那么相当于 Vue 的 slot
+function renderColumn(column: TableColumn, index: number) {
+  // 编译后的 jsx 需要使用 h 函数
+  const h = this.$createElement
+  const {
+    prop,
+    input,
+    select,
+    tooltip,
+    render,
+  } = column
+
+  // 🤔 The `node` should always be render-function
+  let node: TableColumn['render']
+
+  if (typeof render === 'function') {
+    node = render
+  } else if (typeof input === 'object') {
+    // TODO: input, select 属于 Form 元素，涉及到校验功能
+  } else if (typeof select === 'object') { }
+
+  // render raw string
+  if (!node) {
+    node = ({ row }) => <span>{row[prop]}</span>
+  }
+
+  // 前两列可以点击(第一列有时候是选框)
+  if (index <= 1) {
+    node = withClickColumnLog.call(this, node)
+  }
+
+  // Wrapped <Tooltip/>
+  if (typeof tooltip === 'object') {
+    node = withTooltip.call(this, column, node, tooltip)
+  }
+
+  return node
+}
+
+// 点击行输出 log
+function withClickColumnLog(render: TableColumn['render']) {
+  return (obj: Parameters<TableColumn['render']>[0]) => {
+    const n = ensureNodeValueVNode.call(this, render(obj))
+    if (!n.data) { n.data = {} }
+    if (!n.data.on) { n.data.on = {} }
+    const originClick = n.data.on.click
+    n.data.on.click = (...args) => {
+      // Keep origin onClick
+      if (originClick) {
+        if (typeof originClick === 'function') {
+          originClick(...args)
+        } else {
+          originClick.forEach((fn) => fn(...args))
+        }
+      }
+      // 将当前行输出到 log
+      console.log(obj.row)
+    }
+    return n
+  }
+}
+
+function withTooltip(
+  column: TableColumn,
+  render: TableColumn['render'],
+  tooltip: TableColumn['tooltip'],
+) {
+  // 编译后的 jsx 需要使用 h 函数
+  const h = this.$createElement
+  const style = 'overflow:hidden; text-overflow:ellipsis; white-space:nowrap;'
+  const { placement = 'top', ...omit } = tooltip
+
+  return (obj: Parameters<TableColumn['render']>[0]) => {
+    let n = ensureNodeValueVNode.call(this, render(obj))
+    n = <Tooltip
+      // @ts-ignore
+      placement={placement}
+      content={tooltip.render ? tooltip.render(obj) : obj.row[column.prop]}
+      {...{ props: omit }}
+    >
+      <div style={style}>{n}</div>
+    </Tooltip>
+    return n
+  }
+}
+
+// 确保渲染内容总是被标签包裹
+function ensureNodeValueVNode(node: JSX_ELEMENT, tag = 'span') {
+  return (node == null || typeof node !== 'object')
+    ? this.$createElement(tag, node)
+    : node
+}
+
+// TODO: @vue/composition-api 中返回的是 VueProxy
+export default TableElementUI as any
