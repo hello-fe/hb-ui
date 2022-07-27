@@ -102,3 +102,7 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Recommend use pnpm
+package-lock.json
+yarn.lock
