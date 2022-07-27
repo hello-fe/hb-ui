@@ -106,3 +106,9 @@ dist
 # Recommend use pnpm
 package-lock.json
 yarn.lock
+
+# 组件输出目录
+form
+table
+!*/**/form
+!*/**/table
