@@ -21,7 +21,7 @@
         <a href="https://github.com/hello-fe/hb-ui/tree/main/packages/element-ui">@hb-ui/element-ui</a>
       </td>
       <td>
-        基于 Element UI 二次封装的一些常用组件
+        基于 element-ui 二次封装的一些常用组件
       </td>
     </tr>
   </tbody>
