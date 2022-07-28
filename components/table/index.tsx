@@ -14,6 +14,10 @@ import { ElTooltip } from 'element-ui/types/tooltip'
 import { ElTableColumn } from 'element-ui/types/table-column'
 import { ElPagination } from 'element-ui/types/pagination'
 
+/**
+ * props.data、props.pagination 设计为单向数据流
+ */
+
 // 屏蔽 Tooltip.content 传入组件警告
 // @ts-ignore
 Tooltip.props.content = [String, Object]
@@ -44,6 +48,12 @@ export interface TableProps<RecordType = KVA> {
     }) => JSX_ELEMENT
   })[]
   data?: RecordType[]
+  /** 返回 undefined 代表打断请求 */
+  query?: (args: {
+    /** 请求次数，当不想自动发起首次请求时可以判断 count==1 返回 undefined 打断请求 */
+    count: number
+    pagination: TablePagination
+  }) => Promise<({ data: RecordType[] } & TablePagination) | undefined>
   pagination?: null | {
     /** Current page number */
     currentPage: number
@@ -54,11 +64,8 @@ export interface TableProps<RecordType = KVA> {
     /** 泛化 */
     props?: Partial<ElPagination & KVA>
   }
-  /** 返回 false 代表打断请求 */
-  query?: (pagination: TablePagination) => false | ({ data: RecordType[] } & TablePagination)
   handle?: {
-    refresh: (pagination?: TablePagination) => void
-    pagination: TablePagination
+    refresh: (pagination: TablePagination) => void
   }
   /** 泛化 */
   props?: Partial<ElTable & KVA>
@@ -66,8 +73,8 @@ export interface TableProps<RecordType = KVA> {
 
 export type TableColumn<RecordType = KVA> = TableProps<RecordType>['columns'][0]
 export type TableData<RecordType = KVA> = TableProps<RecordType>['data'][0]
+export type TableQuery<RecordType = KVA> = TableProps<RecordType>['query']
 export type TablePagination = TableProps['pagination']
-export type TableQueryResult<RecordType = KVA> = ReturnType<TableProps<RecordType>['query']>
 export type TableHandle<RecordType = KVA> = TableProps<RecordType>['handle']
 
 // 这里与 export default 类型并不匹配，Vue2 提供的 ts 并不完整
@@ -75,10 +82,12 @@ const TableElementUI: Component<
   () => {
     loading: boolean,
     tableData?: TableData[],
+    pagination2?: Partial<Pagination>
   },
   {
     onCurrentChange: (current: number) => void,
     onSizeChange: (size: number) => void,
+    queryHandle: () => void,
   },
   KVA,
   TableProps
@@ -88,6 +97,8 @@ const TableElementUI: Component<
     return {
       loading: false,
       tableData: undefined,
+      // 默认的 pagination 配置
+      pagination2: { currentPage: 1, pageSize: 10, total: 0 },
     }
   },
   props: {
@@ -98,35 +109,64 @@ const TableElementUI: Component<
     },
     // @ts-ignore
     data: [Object, Array],
-    pagination: {
-      // @ts-ignore
-      type: [Object, null],
-      // 默认的 pagination 配置
-      default: () => ({ currentPage: 1, pageSize: 10, total: 0 }),
-    },
+    // @ts-ignore
+    query: Function,
+    // @ts-ignore
+    pagination: [Object, null],
     // @ts-ignore
     handle: Object,
   },
   created() {
     const props = this.$props as TableProps
+    this.queryCount = 0
+    const _this = this
+
+    if (props.handle) {
+      props.handle.refresh = function refresh(pagination) {
+        pagination && (this.pagination2 = pagination)
+        _this.queryHandle()
+      }
+    }
+
+    this.queryHandle()
   },
   watch: {
     data: {
       handler(d) {
-        // 直接传入 data 数据
+        // 合并传入参数
         d && (this.tableData = d)
       },
+      immediate: true,
+    },
+    pagination: {
+      handler(pagination) {
+        // 合并传入参数
+        pagination !== undefined && (this.pagination2 = pagination)
+      },
+      deep: true,
       immediate: true,
     },
   },
   methods: {
     onCurrentChange(current) {
-      const props = this.$props as TableProps
-      props.pagination.currentPage = current
+      this.pagination2.currentPage = current
+      this.queryHandle()
     },
     onSizeChange(size) {
+      this.pagination2.pageSize = size
+      this.queryHandle()
+    },
+    async queryHandle() {
       const props = this.$props as TableProps
-      props.pagination.pageSize = size
+      this.queryCount++
+
+      if (!props.query) return
+      const result = await props.query({ count: this.queryCount, pagination: this.pagination2 })
+      if (!result) return // 打断请求 or 无效请求
+
+      const { data, ...pagination } = result
+      this.tableData = data
+      this.pagination2 = pagination
     },
   },
   render() {
@@ -159,12 +199,12 @@ const TableElementUI: Component<
           style="margin-top:15px;text-align:right;"
           layout="total, sizes, prev, pager, next, jumper"
           page-sizes={[10, 20, 50, 100, 200, 500]}
-          current-page={props.pagination.currentPage}
-          page-size={props.pagination.pageSize}
-          total={props.pagination.total}
+          current-page={this.pagination2.currentPage}
+          page-size={this.pagination2.pageSize}
+          total={this.pagination2.total}
           on-current-change={this.onCurrentChange}
           on-size-change={this.onSizeChange}
-          {...{ props: props.pagination.props }}
+          {...{ props: props.pagination?.props }}
         />}
       </div>
     )
