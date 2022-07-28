@@ -10,12 +10,13 @@ const TAG = chalk.bgBlue(' build.mjs ');
 const { __dirname } = cjs(import.meta.url);
 
 for (const comp of config.components) {
-  const filename = path.join(config.root, comp.filename);
+  const entry = path.join(config.comps_dir, comp.entry);
+  const filename = path.join(config.out_dir, comp.filename);
   const parsed = path.parse(filename);
-  const result = transformFileSync(comp.entry, {
+  const result = transformFileSync(entry, {
     ...babelConfig,
     sourceMaps: true,
-    sourceFileName: path.posix.relative(filename, comp.entry),
+    sourceFileName: path.posix.relative(filename, entry),
   });
 
   if (!result) continue;

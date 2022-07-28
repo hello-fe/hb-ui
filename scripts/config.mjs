@@ -5,19 +5,27 @@ const { __dirname } = cjs(import.meta.url);
 
 const root = path.join(__dirname, '..');
 const comps_dir = path.join(root, 'components');
+const out_dir = path.join(root, 'es');
 
 export default {
   components: [
     {
+      name: '',
+      entry: 'index.ts',
+      filename: 'index.js',
+    },
+    {
       name: 'form',
-      entry: path.join(comps_dir, 'form/index.tsx'),
+      entry: 'form/index.tsx',
       filename: 'form/index.js',
     },
     {
       name: 'table',
-      entry: path.join(comps_dir, 'table/index.tsx'),
+      entry: 'table/index.tsx',
       filename: 'table/index.js',
     },
   ],
   root,
+  comps_dir,
+  out_dir,
 };
