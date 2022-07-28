@@ -83,7 +83,7 @@ const TableElementUI: Component<
   KVA,
   TableProps
 > = {
-  name: 'table-element-ui',
+  name: 'hb-ui-table',
   data() {
     return {
       loading: false,
@@ -124,7 +124,7 @@ const TableElementUI: Component<
     const _this = Object.assign(this, { $createElement: arguments[0] })
 
     return (
-      <div class="table-element-ui">
+      <div class="hb-ui-table">
         <ElementTable
           v-loading={this.loading}
           data={this.tableData}
