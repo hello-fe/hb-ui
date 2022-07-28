@@ -10,7 +10,7 @@
   <tbody>
     <tr>
       <td>
-        <a href="https://github.com/hello-fe/hb-ui/tree/main/packages/antd">packages/antd</a>
+        <a href="https://github.com/hello-fe/hb-ui/tree/main/packages/antd">@hb-ui/antd</a>
       </td>
       <td>
         基于 antd 二次封装的一些常用组件
@@ -18,7 +18,7 @@
     </tr>
     <tr>
       <td>
-        <a href="https://github.com/hello-fe/hb-ui/tree/main/packages/element-ui">packages/element-ui</a>
+        <a href="https://github.com/hello-fe/hb-ui/tree/main/packages/element-ui">@hb-ui/element-ui</a>
       </td>
       <td>
         基于 Element UI 二次封装的一些常用组件
