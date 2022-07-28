@@ -39,6 +39,10 @@
 │ ├── form
 │ └── table
 │
+├─┬ es              组件输出目录
+│ ├── form
+│ └── table
+│
 ├── scripts         组件构建脚本
 ├── server          mock server
 ├── view            开发组件实时预览
@@ -55,7 +59,7 @@ npm run dev
 
 ## 构建
 
-构建脚本会将 `components/*` 构建到根目录
+构建脚本会将 `components/*` 构建到 `es/*`
 
 ```sh
 npm run build
