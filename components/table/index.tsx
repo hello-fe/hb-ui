@@ -77,8 +77,8 @@ const TableElementUI: Component<
     tableData?: TableData[],
   },
   {
-    onCurrentChange: () => void,
-    onSizeChange: () => void,
+    onCurrentChange: (current: number) => void,
+    onSizeChange: (size: number) => void,
   },
   KVA,
   TableProps
@@ -98,8 +98,12 @@ const TableElementUI: Component<
     },
     // @ts-ignore
     data: [Object, Array],
-    // @ts-ignore
-    pagination: [Object, null],
+    pagination: {
+      // @ts-ignore
+      type: [Object, null],
+      // 默认的 pagination 配置
+      default: () => ({ currentPage: 1, pageSize: 10, total: 0 }),
+    },
     // @ts-ignore
     handle: Object,
   },
@@ -116,8 +120,14 @@ const TableElementUI: Component<
     },
   },
   methods: {
-    onCurrentChange() { },
-    onSizeChange() { },
+    onCurrentChange(current) {
+      const props = this.$props as TableProps
+      props.pagination.currentPage = current
+    },
+    onSizeChange(size) {
+      const props = this.$props as TableProps
+      props.pagination.pageSize = size
+    },
   },
   render() {
     const props = this.$props as TableProps
@@ -143,7 +153,7 @@ const TableElementUI: Component<
               </ElementTableColumn>
           ))}
         </ElementTable>
-        {props.pagination && <Pagination
+        {props.pagination !== null && <Pagination
           // @ts-ignore
           background
           style="margin-top:15px;text-align:right;"
