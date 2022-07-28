@@ -1,34 +1,6 @@
 # element-ui
+
 基于 Element UI 二次封装的一些常用组件
-
-## 组件
-
-使用方法点击组件名称查看
-
-<table>
-  <thead>
-    <th>名称</th>
-    <th>描述</th>
-  </thead>
-  <tbody>
-    <tr>
-      <td>
-        <a href="https://github.com/hello-fe/element-ui/tree/main/components/form">Form</a>
-      </td>
-      <td>
-        基于 element-ui/form、配置化
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <a href="https://github.com/hello-fe/element-ui/tree/main/components/table">Table</a>
-      </td>
-      <td>
-        基于 element-ui/table、配置化、接管请求、接管分页
-      </td>
-    </tr>
-  </tbody>
-</table>
 
 ## 工程
 
@@ -45,7 +17,11 @@
 │
 ├── scripts         组件构建脚本
 ├── server          mock server
-├── view            开发组件实时预览
+│
+├─┬ view            开发组件实时预览
+│ ├── form          form 使用案例
+│ └── table         table 使用案例
+│
 └── vite.config.js
 ```
 
@@ -64,3 +40,23 @@ npm run dev
 ```sh
 npm run build
 ```
+
+## 组件
+
+推荐将项目 clone 到本地，然后执行 `npm run dev` 看实际效果
+
+#### Form
+
+- 基于 element-ui/form
+- 配置化
+
+[使用案例](https://github.com/hello-fe/hb-ui/tree/main/packages/element-ui/view/form)
+
+#### Table
+
+- element-ui/table
+- 配置化
+- 接管请求
+- 接管分页
+
+[使用案例](https://github.com/hello-fe/hb-ui/tree/main/packages/element-ui/view/table)
