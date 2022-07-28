@@ -2,6 +2,7 @@
   "name": "@hb-ui/element-ui",
   "version": "0.0.0",
   "description": "基于 Element UI 二次封装的一些常用组件",
+  "main": "es/index.js",
   "scripts": {
     "build": "node scripts/build.mjs",
     "dev": "vite",
@@ -23,7 +24,6 @@
   },
   "files": [
     "components",
-    "form",
-    "table"
+    "es"
   ]
 }
