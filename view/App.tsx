@@ -1,6 +1,6 @@
 import { Button } from 'element-ui'
 import { Component } from 'vue'
-import Table, { TableProps } from '../components/table'
+import { Table, TableProps } from '../components'
 
 export interface RowRecord {
   name: string
@@ -53,7 +53,7 @@ const App: Component = {
 
     return (
       <div>
-        {/* <table-element-ui /> */}
+        {/* <table-element-ui columns={tableProps.columns} /> */}
         <Table {...{ props: tableProps }} />
       </div>
     )
