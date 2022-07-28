@@ -1,0 +1,16 @@
+{
+  "name": "@hb-ui/antd",
+  "version": "0.0.0",
+  "description": "基于 antd 二次封装的一些常用组件",
+  "main": "es/index.js",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "vite",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {},
+  "files": [
+    "components",
+    "es"
+  ]
+}
