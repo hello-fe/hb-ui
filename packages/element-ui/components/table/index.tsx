@@ -23,7 +23,7 @@ const Tooltip = { ...ElementTooltip }
 // @ts-ignore
 Tooltip.props.content = [String, Object]
 
-export interface TableProps<RecordType = KVA> {
+export interface TableProps<RowType = KVA> {
   columns: (Partial<ElTableColumn> & KVA & {
     // Form 元素
     // 与元素签名一致
@@ -31,30 +31,30 @@ export interface TableProps<RecordType = KVA> {
     select?: Partial<ElSelect> & {
       options:
       | (OptionRecord & Partial<ElOption>)[]
-      | ((...args: Parameters<TableColumn<RecordType>['render']>) => (OptionRecord & Partial<ElOption>)[])
+      | ((...args: Parameters<TableColumn<RowType>['render']>) => (OptionRecord & Partial<ElOption>)[])
       rules?: ElFormItem['rules']
     }
     // TODO: datePicker?: Partial<ElDatePicker>
 
     tooltip?: Partial<ElTooltip & {
       /** 自定义渲染 content 支持 JSX.Element */
-      render: TableColumn<RecordType>['render']
+      render: TableColumn<RowType>['render']
     }>
     render?: (props: {
       $index: number
       /** 当前列属性 */
-      column: TableColumn<RecordType>
+      column: TableColumn<RowType>
       /** 当前列数据 */
-      row: RecordType
+      row: RowType
     }) => JSX_ELEMENT
   })[]
-  data?: RecordType[]
+  data?: RowType[]
   /** 返回 undefined 代表打断请求 */
   query?: (args: {
     /** 请求次数，当不想自动发起首次请求时可以判断 count==1 返回 undefined 打断请求 */
     count: number
     pagination: TablePagination
-  }) => Promise<({ data: RecordType[] } & TablePagination) | undefined>
+  }) => Promise<({ data: RowType[] } & TablePagination) | undefined>
   pagination?: null | {
     /** Current page number */
     currentPage: number
