@@ -8,4 +8,9 @@ export default defineConfig({
       jsx: true,
     }),
   ],
+  resolve: {
+    alias: [
+      { find: 'root', replacement: __dirname },
+    ],
+  },
 })

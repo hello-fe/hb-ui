@@ -9,6 +9,9 @@
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "declaration": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "root/*": ["./*"]
+    }
   }
 }
