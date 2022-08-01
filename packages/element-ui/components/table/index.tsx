@@ -1,4 +1,4 @@
-import { Component } from 'vue'
+import Vue, { Component } from 'vue'
 import {
   Pagination,
   Table as ElementTable,
@@ -21,7 +21,7 @@ import { ElPagination } from 'element-ui/types/pagination'
 const Tooltip = { ...ElementTooltip }
 // 屏蔽 Tooltip.content 传入组件警告
 // @ts-ignore
-Tooltip.props.content = [String, Object]
+Tooltip.props.content.type = [String, Object]
 
 export interface TableProps<RowType = KVA> {
   columns: (Partial<ElTableColumn> & KVA & {
@@ -302,8 +302,8 @@ function withTooltip(
 
   return (obj: Parameters<TableColumn['render']>[0]) => {
     let n = ensureNodeValueVNode.call(this, render(obj))
+    // @ts-ignore
     n = <Tooltip
-      // @ts-ignore
       placement={placement}
       content={tooltip.render ? tooltip.render(obj) : obj.row[column.prop]}
       {...{ props: omit }}
