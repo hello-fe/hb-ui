@@ -4,10 +4,12 @@
   "packageManager": "pnpm@7.0.0",
   "description": "基于 Element UI 二次封装的一些常用组件",
   "main": "es/index.js",
+  "types": "types",
   "scripts": {
     "build": "node scripts/build.mjs",
     "dev": "vite",
-    "prepublishOnly": "npm run build"
+    "// generate declaration": "https://github.com/babel/babel/issues/9850",
+    "prepublishOnly": "npm run build && tsc --emitDeclarationOnly --project tsconfig.build.json"
   },
   "devDependencies": {
     "@babel/core": "^7.18.9",
