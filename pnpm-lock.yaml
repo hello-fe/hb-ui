@@ -24,6 +24,7 @@ importers:
       vite: ^3.0.3
       vite-plugin-vue2: ^2.0.2
       vue: ~2.6.14
+      vue-router: ^3.5.4
       vue-template-compiler: ~2.6.14
     devDependencies:
       '@babel/core': 7.18.9
@@ -35,6 +36,7 @@ importers:
       vite: 3.0.3
       vite-plugin-vue2: 2.0.2_j2frrzyiblgqccpxtan742dazy
       vue: 2.6.14
+      vue-router: 3.5.4
       vue-template-compiler: 2.6.14
 
 packages:
@@ -2859,6 +2861,10 @@ packages:
       rollup: 2.77.2
     optionalDependencies:
       fsevents: 2.3.2
+    dev: true
+
+  /vue-router/3.5.4:
+    resolution: {integrity: sha512-x+/DLAJZv2mcQ7glH2oV9ze8uPwcI+H+GgTgTmb5I55bCgY3+vXWIsqbYUzbBSZnwFHEJku4eoaH/x98veyymQ==}
     dev: true
 
   /vue-template-babel-compiler/1.2.0_ev5jzj74xu2fombjvobqpq452a:
