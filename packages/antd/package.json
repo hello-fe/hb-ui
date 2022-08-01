@@ -1,6 +1,7 @@
 {
   "name": "@hb-ui/antd",
   "version": "0.0.0",
+  "packageManager": "pnpm@7.0.0",
   "description": "基于 antd 二次封装的一些常用组件",
   "main": "es/index.js",
   "scripts": {
