@@ -3,7 +3,7 @@ import {
   Pagination,
   Table as ElementTable,
   TableColumn as ElementTableColumn,
-  Tooltip,
+  Tooltip as ElementTooltip,
 } from 'element-ui'
 import { ElFormItem } from 'element-ui/types/form-item'
 import { ElInput } from 'element-ui/types/input'
@@ -18,6 +18,7 @@ import { ElPagination } from 'element-ui/types/pagination'
  * props.data、props.pagination 设计为单向数据流
  */
 
+const Tooltip = { ...ElementTooltip }
 // 屏蔽 Tooltip.content 传入组件警告
 // @ts-ignore
 Tooltip.props.content = [String, Object]
