@@ -1,4 +1,4 @@
-import Vue, { Component } from 'vue'
+import { Component } from 'vue'
 import {
   Pagination,
   Table as ElementTable,
@@ -13,6 +13,11 @@ import { ElTable } from 'element-ui/types/table'
 import { ElTooltip } from 'element-ui/types/tooltip'
 import { ElTableColumn } from 'element-ui/types/table-column'
 import { ElPagination } from 'element-ui/types/pagination'
+import {
+  KVA,
+  OptionRecord,
+  JSX_ELEMENT,
+} from '../../types/common'
 
 /**
  * props.data、props.pagination 设计为单向数据流
@@ -66,7 +71,7 @@ export interface TableProps<RowType = KVA> {
     props?: Partial<ElPagination & KVA>
   }
   handle?: {
-    refresh: (pagination: TablePagination) => void
+    reload: (pagination: TablePagination) => void
   }
   /** 泛化 */
   props?: Partial<ElTable & KVA>
@@ -123,7 +128,7 @@ const TableElementUI: Component<
     const _this = this
 
     if (props.handle) {
-      props.handle.refresh = function refresh(pagination) {
+      props.handle.reload = function reload(pagination) {
         pagination && (this.pagination2 = pagination)
         _this.queryHandle()
       }
@@ -159,9 +164,9 @@ const TableElementUI: Component<
     },
     async queryHandle() {
       const props = this.$props as TableProps
-      this.queryCount++
 
       if (!props.query) return
+      this.queryCount++
       const result = await props.query({ count: this.queryCount, pagination: this.pagination2 })
       if (!result) return // 打断请求 or 无效请求
 

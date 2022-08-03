@@ -2,7 +2,7 @@ import { Component } from 'vue'
 import { Button } from 'element-ui'
 import { Table, TableHandle, TableProps, TableQuery } from 'root/components'
 
-export interface RowRecord {
+export interface RowType {
   name: string
   age: number
   gender: 0 | 1
@@ -17,7 +17,7 @@ const TableTsx: Component = {
     // setInterval(() => this.data = this.data.map(d => Object.assign(d, { date: Date.now() })), 1000)
   },
   data() {
-    const data: RowRecord[] = [
+    const data: RowType[] = [
       { name: '张三', age: 23, gender: 1, date: Date.now() },
       { name: '阿宁', age: 24, gender: 0, date: Date.now() },
     ]
@@ -41,12 +41,12 @@ const TableTsx: Component = {
         ...this.pagination,
       }
     } as TableQuery,
-    refresh() {
-      this.tableHandle.refresh()
+    reload() {
+      this.tableHandle.reload()
     },
   },
   render() {
-    const tableProps: TableProps<RowRecord> = {
+    const tableProps: TableProps<RowType> = {
       data: this.data,
       query: args => this.query(args),
       handle: this.tableHandle,
@@ -76,7 +76,7 @@ const TableTsx: Component = {
         {
           label: '操作',
           prop: '操作',
-          render: () => <Button on-click={this.refresh}>刷新</Button>,
+          render: () => <Button on-click={this.reload}>刷新</Button>,
         },
       ],
       // 关闭分页
