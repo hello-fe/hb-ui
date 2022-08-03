@@ -1,4 +1,4 @@
-import Vue, { Component } from 'vue'
+import { Component } from 'vue'
 import {
   Pagination,
   Table as ElementTable,
@@ -13,6 +13,11 @@ import { ElTable } from 'element-ui/types/table'
 import { ElTooltip } from 'element-ui/types/tooltip'
 import { ElTableColumn } from 'element-ui/types/table-column'
 import { ElPagination } from 'element-ui/types/pagination'
+import {
+  KVA,
+  OptionRecord,
+  JSX_ELEMENT,
+} from '../../types/common'
 
 /**
  * props.data、props.pagination 设计为单向数据流
