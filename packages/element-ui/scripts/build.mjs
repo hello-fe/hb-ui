@@ -9,6 +9,8 @@ import { cjs } from './utils.mjs';
 const TAG = chalk.bgBlue(' build.mjs ');
 const { __dirname } = cjs(import.meta.url);
 
+fs.rmSync(path.join(__dirname, '../es'), { recursive: true });
+
 for (const comp of config.components) {
   const entry = path.join(config.comps_dir, comp.entry);
   const filename = path.join(config.out_dir, comp.filename);
