@@ -164,9 +164,9 @@ const TableElementUI: Component<
     },
     async queryHandle() {
       const props = this.$props as TableProps
-      this.queryCount++
 
       if (!props.query) return
+      this.queryCount++
       const result = await props.query({ count: this.queryCount, pagination: this.pagination2 })
       if (!result) return // 打断请求 or 无效请求
 
