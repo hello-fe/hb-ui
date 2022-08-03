@@ -5,6 +5,11 @@
   "description": "基于 Element UI 二次封装的一些常用组件",
   "main": "es/index.js",
   "types": "types",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hello-fe/hb-ui.git",
+    "directory": "packages/element-ui"
+  },
   "scripts": {
     "build": "node scripts/build.mjs",
     "dev": "vite",
