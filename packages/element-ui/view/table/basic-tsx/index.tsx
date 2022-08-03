@@ -41,8 +41,8 @@ const TableTsx: Component = {
         ...this.pagination,
       }
     } as TableQuery,
-    refresh() {
-      this.tableHandle.refresh()
+    reload() {
+      this.tableHandle.reload()
     },
   },
   render() {
@@ -76,7 +76,7 @@ const TableTsx: Component = {
         {
           label: '操作',
           prop: '操作',
-          render: () => <Button on-click={this.refresh}>刷新</Button>,
+          render: () => <Button on-click={this.reload}>刷新</Button>,
         },
       ],
       // 关闭分页

@@ -71,7 +71,7 @@ export interface TableProps<RowType = KVA> {
     props?: Partial<ElPagination & KVA>
   }
   handle?: {
-    refresh: (pagination: TablePagination) => void
+    reload: (pagination: TablePagination) => void
   }
   /** 泛化 */
   props?: Partial<ElTable & KVA>
@@ -128,7 +128,7 @@ const TableElementUI: Component<
     const _this = this
 
     if (props.handle) {
-      props.handle.refresh = function refresh(pagination) {
+      props.handle.reload = function reload(pagination) {
         pagination && (this.pagination2 = pagination)
         _this.queryHandle()
       }
