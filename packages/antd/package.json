@@ -4,12 +4,35 @@
   "packageManager": "pnpm@7.0.0",
   "description": "基于 antd 二次封装的一些常用组件",
   "main": "es/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hello-fe/hb-ui.git",
+    "directory": "packages/antd"
+  },
   "scripts": {
-    "build": "node scripts/build.mjs",
+    "build": "rm -rf es && tsc --project tsconfig.build.json",
     "dev": "vite",
     "prepublishOnly": "npm run build"
   },
-  "devDependencies": {},
+  "dependencies": {
+    "@ant-design/icons": "^4.7.0",
+    "antd": "^4.22.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.18.9",
+    "@babel/plugin-transform-typescript": "^7.18.8",
+    "@babel/preset-react": "^7.18.6",
+    "@types/react": "^18.0.15",
+    "@types/react-dom": "^18.0.6",
+    "@vitejs/plugin-react": "^2.0.0",
+    "@vue/babel-preset-app": "^5.0.8",
+    "chalk": "^5.0.1",
+    "typescript": "^4.7.4",
+    "vite": "^3.0.3"
+  },
   "files": [
     "components",
     "es"
