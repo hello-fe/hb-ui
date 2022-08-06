@@ -1,12 +1,8 @@
-import { useState } from 'react'
-import './App.css'
+import { useRoutes } from 'react-router-dom'
+import { routes } from './router'
 
-function App() {
-  return (
-    <div className="App">
+export default () => {
+  const element = useRoutes(routes)
 
-    </div>
-  )
+  return element
 }
-
-export default App
