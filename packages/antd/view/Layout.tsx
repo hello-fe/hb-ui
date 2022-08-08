@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { Layout, Menu, Divider } from 'antd'
+import { Divider, Layout, Menu } from 'antd'
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -25,10 +25,12 @@ const AppLayout = () => {
           color: 'white',
         }}
       >
-        <h2 
+        <h2
           onClick={() => { navigate('/') }}
           style={{ margin: 0, color: location.pathname === '/' ? '#1890ff' : 'white', cursor: 'pointer' }}
-        >@hb-ui/antd</h2>
+        >
+          @hb-ui/antd
+        </h2>
         {React.createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
           className: 'trigger',
           style: { marginLeft: 15, },
@@ -73,7 +75,6 @@ const AppLayout = () => {
         >
           <h2>Hey here! 👋</h2>
           <Divider />
-          <hr />
           <Outlet />
         </Content>
       </Layout>
