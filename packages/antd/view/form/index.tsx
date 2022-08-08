@@ -18,22 +18,6 @@ export default () => {
         name: 'name',
       },
       {
-        label: '性别',
-        name: 'gender',
-        radioGroup: {
-          options: [
-            {
-              label: '男',
-              value: 1,
-            },
-            {
-              label: '女',
-              value: 0,
-            },
-          ],
-        },
-      },
-      {
         label: '岗位',
         name: 'department',
         select: {
@@ -53,6 +37,22 @@ export default () => {
         label: '时间',
         name: 'date',
         rangePicker: {},
+      },
+      {
+        label: '性别',
+        name: 'gender',
+        radioGroup: {
+          options: [
+            {
+              label: '男',
+              value: 1,
+            },
+            {
+              label: '女',
+              value: 0,
+            },
+          ],
+        },
       },
       {
         label: '状态',

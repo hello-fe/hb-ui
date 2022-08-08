@@ -143,3 +143,5 @@ function renderFormItem<Values = KVA>(
 
   return <Form.Item key={String(item.name || index)} {...omitItemProps}>{node}</Form.Item>
 }
+
+export default FormAntd
