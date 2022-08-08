@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
-import { Layout, Menu } from 'antd'
+import { Outlet, useNavigate, useLocation } from 'react-router-dom'
+import { Layout, Menu, Divider } from 'antd'
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -13,9 +13,10 @@ const { Header, Sider, Content } = Layout
 const AppLayout = () => {
   const [collapsed, setCollapsed] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
 
   return (
-    <Layout>
+    <Layout style={{ height: '100%' }}>
       <Header
         className="site-layout-background"
         style={{
@@ -24,7 +25,10 @@ const AppLayout = () => {
           color: 'white',
         }}
       >
-        <h2 onClick={() => { navigate('/') }} style={{ margin: 0, color: 'white' }}>@hb-ui/antd</h2>
+        <h2 
+          onClick={() => { navigate('/') }}
+          style={{ margin: 0, color: location.pathname === '/' ? '#1890ff' : 'white', cursor: 'pointer' }}
+        >@hb-ui/antd</h2>
         {React.createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
           className: 'trigger',
           style: { marginLeft: 15, },
@@ -37,10 +41,10 @@ const AppLayout = () => {
           <Menu
             theme="dark"
             mode="inline"
-            defaultSelectedKeys={['1']}
+            selectedKeys={[location.pathname]}
             items={[
               {
-                key: '1',
+                key: '/form',
                 icon: <UserOutlined />,
                 label: 'Form',
                 onClick() {
@@ -48,7 +52,7 @@ const AppLayout = () => {
                 },
               },
               {
-                key: '2',
+                key: '/table',
                 icon: <VideoCameraOutlined />,
                 label: 'Table',
                 onClick() {
@@ -63,10 +67,12 @@ const AppLayout = () => {
           style={{
             margin: '24px 16px',
             padding: 24,
-            minHeight: 'calc(100vh - 110px)',
+            minHeight: 280,
+            backgroundColor: 'white',
           }}
         >
           <h2>Hey here! 👋</h2>
+          <Divider />
           <hr />
           <Outlet />
         </Content>
