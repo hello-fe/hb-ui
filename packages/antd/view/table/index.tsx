@@ -30,6 +30,8 @@ export default () => {
     async query(args) {
       console.log('-- 发起请求 --', JSON.parse(JSON.stringify(args)))
 
+      await new Promise(resolve => setTimeout(resolve, 499))
+
       return {
         data: data.map(d => ({ ...d, date: Date.now() })),
         total: 100,
