@@ -20,23 +20,19 @@ export type HBSelect = Partial<ElSelect> &
   VNodeData & { options: OptionRecord[] }
 export type HBDatePicker = Partial<ElDatePicker> & VNodeData
 export interface FormElement extends Partial<ElFormItem> {
-  label: string
-  name: string
-  labelWidth?: string
   render?: () => JSX_ELEMENT
   input?: HBInput
   select?: HBSelect
   datePicker?: HBDatePicker
 }
-export interface FormProps<FormType = KVA> {
-  model: FormType
-  labelWidth: string
+export interface FormProps {
   elements: (FormElement | (() => JSX_ELEMENT))[]
   onSubmit?: () => Promise<void | boolean> | void | boolean
   onReset?: () => void
   handle?: ElForm
   cache?: boolean
   footer?: false | JSX_ELEMENT
+  props: Partial<ElForm>
 }
 
 const filterKey = 'filterData'
@@ -57,17 +53,13 @@ const FormElementUI: Component = {
   name: 'hb-ui-form',
   data() {
     return {
-      originFormModel: { ...this.$props.model },
+      originFormModel: { ...this.$props.props.model },
     }
   },
   props: {
-    model: {
-      type: Object,
+    props: {
+      type: Object as { (): ElForm },
       default: () => ({}),
-    },
-    labelWidth: {
-      type: String,
-      default: '80px',
     },
     elements: {
       type: Array,
@@ -86,15 +78,13 @@ const FormElementUI: Component = {
     footer: false,
   },
   mounted() {
-    const { handle, cache, model } = this.$props
-    if (handle) {
-      Object.assign(handle, this.$refs['hb-ui-form'])
-    }
+    const { handle, cache, props } = this.$props
+    if (handle) Object.assign(handle, this.$refs['hb-ui-form'])
     if (cache) {
       const params = this.getParams()
       if (params[filterKey]) {
         for (const [k, v] of Object.entries(JSON.parse(params[filterKey]))) {
-          this.$set(model, k, v)
+          this.$set(props.model, k, v)
         }
       }
     }
@@ -107,8 +97,9 @@ const FormElementUI: Component = {
       return dict
     },
     cachesParams() {
+      const { model } = this.$props.props
       const dict = {}
-      for (const [k, v] of Object.entries(this.$props.model)) {
+      for (const [k, v] of Object.entries(model)) {
         if (v) dict[k] = v
       }
       const params = this.getParams()
@@ -131,35 +122,34 @@ const FormElementUI: Component = {
       if (onSubmit) {
         const explicitlyStop = await onSubmit()
         if (explicitlyStop === false) return
-        if (cache) this.cachesParams()
       }
+      if (cache) this.cachesParams()
     },
     onFormReset() {
-      const { model, onReset, cache } = this.$props
+      const {
+        onReset,
+        cache,
+        props: { model },
+      } = this.$props
       for (const k of Object.keys(model)) {
         model[k] = this.originFormModel[k]
       }
-      if (onReset) {
-        onReset()
-        if (cache) this.cachesParams()
-      }
+      if (onReset) onReset()
+      if (cache) this.cachesParams()
     },
   },
 
   render() {
-    const FP = this.$props as FormProps
+    const { props, elements, footer } = this.$props as FormProps
 
     const renderElement = (element: FormElement) => {
-      const { name, render, input = {}, select, datePicker } = element
+      const { prop, render, input = {}, select, datePicker } = element
       const ComponentsMap = {
         input: ({ on, attrs, ...omit }: HBInput) => (
           <Input
-            v-model={FP.model[name]}
+            v-model={props.model[prop]}
             {...{
-              props: {
-                clearable: true, 
-                ...omit
-              },
+              props: { clearable: true, ...omit },
               on,
               attrs: {
                 placeholder: '请输入',
@@ -171,21 +161,15 @@ const FormElementUI: Component = {
         ),
         select: ({ options, on, attrs, ...omit }: HBSelect) => (
           <Select
-            v-model={FP.model[name]}
+            v-model={props.model[prop]}
             {...{
-              props: {  filterable: true, ...omit },
+              props: { filterable: true, ...omit },
               on,
-              attrs: {
-                placeholder: '请选择',
-                ...attrs
-              },
+              attrs: { placeholder: '请选择', ...attrs },
             }}
           >
-            {options.map((selectOptOmit, idx) => (
-              <Option
-                key={idx}
-                {...{props: selectOptOmit}}
-              />
+            {options.map((selectOptOmit) => (
+              <Option {...{ props: selectOptOmit }} />
             ))}
           </Select>
         ),
@@ -197,13 +181,9 @@ const FormElementUI: Component = {
           ...omit
         }: HBDatePicker) => (
           <DatePicker
-            v-model={FP.model[name]}
+            v-model={props.model[prop]}
             {...{
-              props: {
-                startPlaceholder,
-                endPlaceholder,
-                ...omit
-              },
+              props: { startPlaceholder, endPlaceholder, ...omit },
               on,
               attrs,
             }}
@@ -227,41 +207,20 @@ const FormElementUI: Component = {
     }
 
     return (
-      <ElementForm
-        ref='hb-ui-form'
-        v-model={FP.model}
-        {...{
-          props: {
-            inline: true,
-            labelWidth: FP.labelWidth,
-            ...FP,
-          },
-        }}
-      >
-        {FP.elements.map((element, idx) => {
+      <ElementForm ref='hb-ui-form' {...{ props: { inline: true, ...props } }}>
+        {elements.map((element) => {
           if (typeof element === 'function') return element()
-          const {
-            name,
-            $scopedSlots,
-            ...itemOmit
-          } = element
-
+          const { $scopedSlots, ...itemOmit } = element
           return (
             <ElementFormItem
-              key={idx}
-              scopedSlots={$scopedSlots}
-              {...{
-                props: {
-                  prop: name,
-                  ...itemOmit,
-                },
-              }}
+              scopedSlots= {$scopedSlots}
+              {...{ props: itemOmit }}
             >
               {renderElement(element)}
             </ElementFormItem>
           )
         })}
-        {FP.footer ?? (
+        {footer ?? (
           <span>
             <Button type='primary' onClick={this.onFormSubmit}>
               查询

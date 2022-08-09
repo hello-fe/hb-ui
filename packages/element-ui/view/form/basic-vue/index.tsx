@@ -3,21 +3,28 @@ import { Component } from 'vue'
 
 const FormTsx: Component = {
   data() {
-    const formModel = {}
-
+    const formModel = {area:'1',age:'10'}
+    const formHandle = {}
     return {
       formModel,
+      formHandle,
+    }
+  },
+  methods: {
+    async onSubmit(){
+      try { await this.formHandle.validate(); } catch (error) { return; }
+      console.log(this.formModel)
     }
   },
   render() {
     const formProps: FormProps = {
-      model: this.formModel,
-      labelWidth: '87px',
       cache: true,
+      onSubmit: this.onSubmit,
+      handle: this.formHandle,
       elements: [
         {
           label: '地区',
-          name: 'area',
+          prop: 'area',
           select: {
             options: [
               { value: '1', label: 'one' },
@@ -29,11 +36,16 @@ const FormTsx: Component = {
             onChange: (e)=>{console.log(22,e)},
             clearable: true,
           },
-          rules: { required: true, message: '11' },
+          rules: { required: true, message: '请选择地区' },
+        },
+        {
+          label: '凭证类别',
+          prop: 'voucherCategory',
+          rules: { required: true, message: '请输入凭证类别' },
         },
         {
           label: '年龄',
-          name: 'age',
+          prop: 'age',
           input: {
             on: {
               // change: (e)=>console.log('change',e),
@@ -42,11 +54,15 @@ const FormTsx: Component = {
             },
             maxlength: 2,
             onChange: (e)=>{console.log(222,e)},
+            clearable: false,
           },
+          $scopedSlots: {
+            label: () => <div>11</div>
+          }
         },
         // {
         //   label: '完成时间',
-        //   name: 'finishDate',
+        //   prop: 'finishDate',
         //   datePicker: {
         //     type: 'daterange',
         //     on: {
@@ -57,11 +73,16 @@ const FormTsx: Component = {
         //   }
         // }
       ],
+      props: {
+        model: this.formModel,
+        labelWidth: '87px',
+        inline: true,
+      }
     }
 
     return (
       <div>
-        <Form {...{ props: formProps }}></Form>
+        <Form {...{ props: formProps }} />
       </div>
     )
   },
