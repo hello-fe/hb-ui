@@ -42,6 +42,7 @@ export interface FormProps<Values = KVA> extends AntdFormProps<Values> {
     // render function
     | (() => JSX.Element)
   )[]
+  /** 预留给 [提交/重置] 的位置 */
   lastItem?: AntdFormItemProps | ((form: FormInstance<Values>) => JSX.Element)
   onSubmit?: (values: Values, form: FormInstance<Values>) => void
 }
@@ -56,6 +57,7 @@ function FormAntd(props: FormProps) {
     lastItem,
     onSubmit,
     onReset,
+    // 🤔 如果外部需要 FormInstance 可以从外部传递进来
     form = Form.useForm()[0],
     className = '',
     ...omitFormProps
