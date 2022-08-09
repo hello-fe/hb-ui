@@ -109,3 +109,5 @@ yarn.lock
 
 # 组件输出目录
 es
+
+.DS_Store
