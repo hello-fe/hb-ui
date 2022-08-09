@@ -23,7 +23,7 @@ export default () => {
   const handle = {} as TableHandle
 
   const reload = () => {
-    handle?.reload()
+    handle?.query()
   }
 
   const tableProps: TableProps<RecordType> = {
