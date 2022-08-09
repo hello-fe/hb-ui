@@ -20,7 +20,7 @@ export const routes: RouteConfig[] = [
   {
     path: '/form-tsx',
     name: 'Form(.tsx)',
-    component: () => import('./form/basic-tsx'),
+    component: () => import('./form/basic-vue'),
     meta: {
       icon: 'el-icon-menu',
     },
