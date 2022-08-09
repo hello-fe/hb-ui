@@ -42,7 +42,7 @@ export interface FormProps<Values = KVA> extends AntdFormProps<Values> {
     // render function
     | (() => JSX.Element)
   )[]
-  footer?: JSX.Element
+  lastItem?: AntdFormItemProps | ((form: FormInstance<Values>) => JSX.Element)
   onSubmit?: (values: Values, form: FormInstance<Values>) => void
 }
 
@@ -51,7 +51,7 @@ export type FormItemProps<Values = KVA> = FormProps<Values>['items'][0]
 function FormAntd(props: FormProps) {
   const {
     items,
-    footer,
+    lastItem,
     onSubmit,
     onReset,
     form = Form.useForm()[0],
@@ -72,7 +72,7 @@ function FormAntd(props: FormProps) {
       {...omitFormProps}
     >
       {items.map(renderFormItem)}
-      {footer !== undefined ? footer : (
+      {typeof lastItem === 'function' ? lastItem(form) : (
         <Form.Item>
           <Button type='primary' onClick={clickSubmit}>提交</Button>
           <Button onClick={() => form.resetFields()}>重置</Button>
