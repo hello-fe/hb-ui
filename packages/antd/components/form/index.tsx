@@ -42,18 +42,22 @@ export interface FormProps<Values = KVA> extends AntdFormProps<Values> {
     // render function
     | (() => JSX.Element)
   )[]
-  footer?: JSX.Element
+  /** 预留给 [提交/重置] 的位置 */
+  lastItem?: AntdFormItemProps | ((form: FormInstance<Values>) => JSX.Element)
   onSubmit?: (values: Values, form: FormInstance<Values>) => void
 }
 
 export type FormItemProps<Values = KVA> = FormProps<Values>['items'][0]
 
+const itemStyleDefault: React.CSSProperties = { width: 350, marginBottom: 14 }
+
 function FormAntd(props: FormProps) {
   const {
     items,
-    footer,
+    lastItem,
     onSubmit,
     onReset,
+    // 🤔 如果外部需要 FormInstance 可以从外部传递进来
     form = Form.useForm()[0],
     className = '',
     ...omitFormProps
@@ -69,11 +73,19 @@ function FormAntd(props: FormProps) {
       className={'hb-ui-form ' + className}
       form={form}
       layout='inline'
+      colon={false}
+      labelCol={{ span: 7 }}
+      wrapperCol={{ span: 17 }}
       {...omitFormProps}
     >
       {items.map(renderFormItem)}
-      {footer !== undefined ? footer : (
-        <Form.Item>
+      {typeof lastItem === 'function' ? lastItem(form) : (
+        <Form.Item
+          key='last-item'
+          label=''
+          style={{ ...itemStyleDefault }}
+          {...lastItem}
+        >
           <Button type='primary' onClick={clickSubmit}>提交</Button>
           <Button onClick={() => form.resetFields()}>重置</Button>
         </Form.Item>
@@ -111,7 +123,7 @@ function renderFormItem<Values = KVA>(
     const { options = [] } = select
 
     node = (
-      <Select {...select}>
+      <Select placeholder={`请选择${item.label || ''}`} {...select}>
         {options.map((opt, idx) => (
           <Select.Option key={idx} {...opt}>{opt.label}</Select.Option>
         ))}
@@ -141,7 +153,13 @@ function renderFormItem<Values = KVA>(
     node = defaultNode
   }
 
-  return <Form.Item key={String(item.name || index)} {...omitItemProps}>{node}</Form.Item>
+  return <Form.Item
+    key={String(item.name || index)}
+    style={{ ...itemStyleDefault }}
+    {...omitItemProps}
+  >
+    {node}
+  </Form.Item>
 }
 
 export default FormAntd
