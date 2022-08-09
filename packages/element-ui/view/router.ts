@@ -17,6 +17,14 @@ export const routes: RouteConfig[] = [
       icon: 'el-icon-menu',
     },
   },
+  {
+    path: '/table-edit',
+    name: 'Table-edit(.tsx)',
+    component: () => import('./table-edit/basic-tsx'),
+    meta: {
+      icon: 'el-icon-menu',
+    },
+  },
 ]
 
 export default new Router({
