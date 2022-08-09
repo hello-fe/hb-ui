@@ -4,28 +4,34 @@
   "packageManager": "pnpm@7.0.0",
   "description": "基于 Element UI 二次封装的一些常用组件",
   "main": "es/index.js",
-  "types": "types",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hello-fe/hb-ui.git",
+    "directory": "packages/element-ui"
+  },
   "scripts": {
     "build": "node scripts/build.mjs",
     "dev": "vite",
     "// generate declaration": "https://github.com/babel/babel/issues/9850",
     "prepublishOnly": "npm run build && tsc --emitDeclarationOnly --project tsconfig.build.json"
   },
+  "dependencies": {
+    "element-ui": "~2.15.9",
+    "vue": "~2.6.14",
+    "vue-router": "~3.5.4"
+  },
   "devDependencies": {
     "@babel/core": "^7.18.9",
     "@babel/plugin-transform-typescript": "^7.18.8",
     "@vue/babel-preset-app": "^5.0.8",
     "chalk": "^5.0.1",
-    "element-ui": "~2.15.9",
-    "typescript": "^4.7.4",
     "vite": "^3.0.3",
     "vite-plugin-vue2": "^2.0.2",
-    "vue": "~2.6.14",
-    "vue-router": "^3.5.4",
     "vue-template-compiler": "~2.6.14"
   },
   "files": [
     "components",
-    "es"
+    "es",
+    "types"
   ]
 }
