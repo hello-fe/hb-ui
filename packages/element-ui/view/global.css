@@ -1,0 +1,29 @@
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+.app-vue {
+  height: 100%;
+  background-color: aliceblue;
+}
+
+.el-header {
+  display: flex;
+  align-items: center;
+  background-color: white;
+}
+
+.el-aside .el-menu {
+  height: 100%;
+}
+
+.el-main {
+  padding: 12px;
+  margin: 12px;
+  background-color: white;
+}
