@@ -16,7 +16,7 @@ const App: Component = {
 
         <el-container>
           <el-aside width="200px">
-            <el-menu default-active="1" class="el-menu-vertical-demo">
+            <el-menu default-active="3" class="el-menu-vertical-demo">
               {routes.map((route, index) => (
                 <el-menu-item index={String(index + 1)}>
                   <i class={route.meta?.icon || 'el-icon-menu'}></i>

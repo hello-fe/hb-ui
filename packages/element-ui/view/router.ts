@@ -17,6 +17,14 @@ export const routes: RouteConfig[] = [
       icon: 'el-icon-menu',
     },
   },
+  {
+    path: '/form-tsx',
+    name: 'Form(.tsx)',
+    component: () => import('./form/basic-vue/index'),
+    meta: {
+      icon: 'el-icon-menu',
+    },
+  },
 ]
 
 export default new Router({

@@ -12,38 +12,46 @@ import { ElForm } from 'element-ui/types/form'
 import { ElFormItem } from 'element-ui/types/form-item'
 import { ElInput } from 'element-ui/types/input'
 import { ElSelect } from 'element-ui/types/select'
-import { Component } from 'vue'
+import { Component, VNodeData } from 'vue'
+import { KVA, OptionRecord, JSX_ELEMENT } from '../../types/common'
 
-export type HBEvent = {
-  onChange?: (data: number | string | Date | Date[]) => void
-  onInput?: (data: number | string) => void
-}
-export type HBInput = Partial<ElInput> & HBEvent
-export type HBSelect = Partial<ElSelect & { props: Partial<ElSelect> }> & {
-  options: OptionRecord[]
-} & HBEvent
-export type HBDatePicker = Partial<ElDatePicker> & HBEvent
+export type HBInput = Partial<ElInput> & VNodeData
+export type HBSelect = Partial<ElSelect> &
+  VNodeData & { options: OptionRecord[] }
+export type HBDatePicker = Partial<ElDatePicker> & VNodeData
 export interface FormElement extends Partial<ElFormItem> {
   label: string
   name: string
   labelWidth?: string
-  render?: () => JSX.Element
+  render?: () => JSX_ELEMENT
   input?: HBInput
   select?: HBSelect
   datePicker?: HBDatePicker
 }
-export interface FormProps {
-  model: KVA
+export interface FormProps<FormType = KVA> {
+  model: FormType
   labelWidth: string
-  elements: (FormElement | (() => JSX.Element))[]
-  onSubmit?: () => Promise<void | Boolean> | void | Boolean
+  elements: (FormElement | (() => JSX_ELEMENT))[]
+  onSubmit?: () => Promise<void | boolean> | void | boolean
   onReset?: () => void
-  handle: ElForm
-  paramsCache?: boolean
-  footer?: false | JSX.Element
+  handle?: ElForm
+  cache?: boolean
+  footer?: false | JSX_ELEMENT
 }
 
 const filterKey = 'filterData'
+
+function convergenceEvent<T>(data: T) {
+  return {
+    ...data,
+    on: Object.entries(data)
+      .map(([k, v]) => {
+        if (k.startsWith('on') && k !== 'on')
+          return { [k.slice(2).toLowerCase()]: v }
+      })
+      .reduce((a, b) => ({ ...a, ...b }), {}),
+  }
+}
 
 const FormElementUI: Component = {
   name: 'hb-ui-form',
@@ -71,19 +79,18 @@ const FormElementUI: Component = {
       type: Object as { (): FormProps['handle'] },
       default: () => ({}),
     },
-    paramsCache: {
+    cache: {
       type: Boolean,
       default: false,
     },
     footer: false,
   },
   mounted() {
-    const { handle, paramsCache, model } = this.$props
+    const { handle, cache, model } = this.$props
     if (handle) {
       Object.assign(handle, this.$refs['hb-ui-form'])
     }
-    console.log(this.$props)
-    if (paramsCache) {
+    if (cache) {
       const params = this.getParams()
       if (params[filterKey]) {
         for (const [k, v] of Object.entries(JSON.parse(params[filterKey]))) {
@@ -102,9 +109,7 @@ const FormElementUI: Component = {
     cachesParams() {
       const dict = {}
       for (const [k, v] of Object.entries(this.$props.model)) {
-        if (v) {
-          dict[k] = v
-        }
+        if (v) dict[k] = v
       }
       const params = this.getParams()
       // delete params[filterKey]
@@ -122,78 +127,86 @@ const FormElementUI: Component = {
       )
     },
     async onFormSubmit() {
-      const { onSubmit, paramsCache } = this.$props
+      const { onSubmit, cache } = this.$props
       if (onSubmit) {
         const explicitlyStop = await onSubmit()
-        if (explicitlyStop === false) {
-          return
-        }
-        if (paramsCache) this.cachesParams()
+        if (explicitlyStop === false) return
+        if (cache) this.cachesParams()
       }
     },
     onFormReset() {
-      const { model, onReset, paramsCache } = this.$props
+      const { model, onReset, cache } = this.$props
       for (const k of Object.keys(model)) {
         model[k] = this.originFormModel[k]
       }
       if (onReset) {
         onReset()
-        if (paramsCache) this.cachesParams()
+        if (cache) this.cachesParams()
       }
     },
   },
 
   render() {
-    const props = this.$props as FormProps
+    const FP = this.$props as FormProps
 
     const renderElement = (element: FormElement) => {
       const { name, render, input = {}, select, datePicker } = element
-
       const ComponentsMap = {
-        input: ({ onChange, onInput, ...omit }: HBInput) => (
+        input: ({ on, attrs, ...omit }: HBInput) => (
           <Input
-            v-model={props.model[name]}
-            placeholder='请输入'
-            clearable
-            onChange={onChange || Function}
-            onInput={onInput || Function}
-            {...{ props: { ...omit } }}
-            maxlength={omit?.maxlength}
+            v-model={FP.model[name]}
+            {...{
+              props: {
+                clearable: true, 
+                ...omit
+              },
+              on,
+              attrs: {
+                placeholder: '请输入',
+                maxlength: omit?.maxlength,
+                ...attrs,
+              },
+            }}
           />
         ),
-        select: ({ onChange, options, ...omit }: HBSelect) => {
-          return (
-            <Select
-              v-model={props.model[name]}
-              placeholder='请选择'
-              clearable
-              filterable
-              onChange={onChange || Function}
-              {...{ props: { ...omit } }}
-            >
-              {options.map(({ label, value, ...selectOptOmit }, idx) => (
-                <Option
-                  key={idx}
-                  label={label}
-                  value={value}
-                  {...{ props: selectOptOmit }}
-                />
-              ))}
-            </Select>
-          )
-        },
+        select: ({ options, on, attrs, ...omit }: HBSelect) => (
+          <Select
+            v-model={FP.model[name]}
+            {...{
+              props: {  filterable: true, ...omit },
+              on,
+              attrs: {
+                placeholder: '请选择',
+                ...attrs
+              },
+            }}
+          >
+            {options.map((selectOptOmit, idx) => (
+              <Option
+                key={idx}
+                {...{props: selectOptOmit}}
+              />
+            ))}
+          </Select>
+        ),
         datePicker: ({
           startPlaceholder = '开始日期',
           endPlaceholder = '结束日期',
-          onChange,
+          on,
+          attrs,
           ...omit
         }: HBDatePicker) => (
           <DatePicker
-            v-model={props.model[name]}
-            startPlaceholder={startPlaceholder}
-            endPlaceholder={endPlaceholder}
-            onChange={onChange || Function}
-            {...{ props: { ...omit } }}
+            v-model={FP.model[name]}
+            {...{
+              props: {
+                startPlaceholder,
+                endPlaceholder,
+                ...omit
+              },
+              on,
+              attrs,
+            }}
           />
         ),
         render,
@@ -203,57 +216,60 @@ const FormElementUI: Component = {
         return ComponentsMap['render']
       }
       if (typeof select === 'object') {
-        return ComponentsMap['select'](select)
+        return ComponentsMap['select'](convergenceEvent<HBSelect>(select))
       }
       if (typeof datePicker === 'object') {
-        return ComponentsMap['datePicker'](datePicker)
+        return ComponentsMap['datePicker'](
+          convergenceEvent<HBDatePicker>(datePicker)
+        )
       }
-      return ComponentsMap['input'](input)
+      return ComponentsMap['input'](convergenceEvent<HBInput>(input))
     }
 
     return (
-      <div>
-        <ElementForm
-          ref='hb-ui-form'
-          v-model={props.model}
-          label-width={props.labelWidth}
-          {...{ props: { inline: true, ...props } }}
-        >
-          {props.elements.map((element, idx) => {
-            if (typeof element === 'function') return element()
-            const {
-              name,
-              label,
-              rules,
-              labelWidth: itemLabelWidth,
-              $scopedSlots,
-              ...itemOmit
-            } = element
-            console.log(itemOmit)
-            return (
-              <ElementFormItem
-                key={idx}
-                label={label}
-                prop={name}
-                rules={rules}
-                labelWidth={itemLabelWidth ?? props.labelWidth}
-                {...{ props: { ...itemOmit } }}
-                scopedSlots={$scopedSlots}
-              >
-                {renderElement(element)}
-              </ElementFormItem>
-            )
-          })}
-          {props.footer ?? (
-            <span>
-              <Button type='primary' onClick={this.onFormSubmit}>
-                查询
-              </Button>
-              <Button onClick={this.onFormReset}>重置</Button>
-            </span>
-          )}
-        </ElementForm>
-      </div>
+      <ElementForm
+        ref='hb-ui-form'
+        v-model={FP.model}
+        {...{
+          props: {
+            inline: true,
+            labelWidth: FP.labelWidth,
+            ...FP,
+          },
+        }}
+      >
+        {FP.elements.map((element, idx) => {
+          if (typeof element === 'function') return element()
+          const {
+            name,
+            $scopedSlots,
+            ...itemOmit
+          } = element
+
+          return (
+            <ElementFormItem
+              key={idx}
+              scopedSlots={$scopedSlots}
+              {...{
+                props: {
+                  prop: name,
+                  ...itemOmit,
+                },
+              }}
+            >
+              {renderElement(element)}
+            </ElementFormItem>
+          )
+        })}
+        {FP.footer ?? (
+          <span>
+            <Button type='primary' onClick={this.onFormSubmit}>
+              查询
+            </Button>
+            <Button onClick={this.onFormReset}>重置</Button>
+          </span>
+        )}
+      </ElementForm>
     )
   },
 }
