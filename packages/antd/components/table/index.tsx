@@ -62,7 +62,10 @@ function TableAntd<RecordType = KVA, FormValues = KVA>(props: TableProps<RecordT
   } = props
 
   const [data, setData] = useState(dataSource)
-  const [page, setPage] = useState(props_pagination)
+  const [page, setPage] = useState<TablePaginationConfig | false>(props_pagination === false ? false : {
+    showQuickJumper: true,
+    ...props_pagination,
+  })
   const [form] = Form.useForm<FormValues>()
   const queryCount = useRef(0)
   const mounted = useRef(false)
@@ -74,9 +77,15 @@ function TableAntd<RecordType = KVA, FormValues = KVA>(props: TableProps<RecordT
     if (!query) return
     queryCount.current++
 
+    const pagination = args.pagination ?? (typeof page === 'object' ? {
+      current: page.current,
+      pageSize: page.pageSize,
+      total: page.total,
+    } : undefined)
+
     const result = await query({
       count: queryCount.current,
-      pagination: args.pagination ?? (page ? page : undefined),
+      pagination,
       payload: args.payload,
     })
     if (!result) return // 打断请求 or 无效请求
@@ -85,7 +94,7 @@ function TableAntd<RecordType = KVA, FormValues = KVA>(props: TableProps<RecordT
 
     const { data, ...omitPage } = result
     setData(data)
-    if (page) {
+    if (typeof page === 'object') {
       setPage({ ...page, ...omitPage })
     }
   }
