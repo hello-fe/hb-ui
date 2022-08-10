@@ -26,7 +26,7 @@ export interface FormElement extends Partial<ElFormItem> {
   datePicker?: HBDatePicker
 }
 export interface FormProps {
-  elements: (FormElement | (() => JSX_ELEMENT) | string)[]
+  elements: (FormElement | (() => JSX_ELEMENT))[]
   onSubmit?: () => Promise<void | boolean> | void | boolean
   onReset?: () => void
   handle?: ElForm
@@ -213,14 +213,13 @@ const FormElementUI: Component = {
       <ElementForm ref='hb-ui-form' {...{ props: { inline: true, ...props } }}>
         {elements.map((element) => {
           if (typeof element === 'function') return element()
-          if (typeof element === 'string') return this.$slots[element]
           const { $scopedSlots, ...itemOmit } = element
           return (
             <ElementFormItem
               scopedSlots={$scopedSlots}
               {...{ props: itemOmit }}
             >
-              { element.slot ? this.$slots[element.prop]: renderElement(element) }
+              {renderElement(element)}
             </ElementFormItem>
           )
         })}

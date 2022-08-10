@@ -5,25 +5,7 @@
     :cache="true"
     :onSubmit="onSubmit"
     :handle="formHandle"
-  >
-    <template v-slot:height>
-      <el-switch
-        v-model="props.model.switch"
-        active-color="#13ce66"
-        inactive-color="#ff4949"
-      />
-    </template>
-
-    <template v-slot:attack>
-      <el-form-item label="攻击" prop="switch1">
-        <el-switch
-          v-model="props.model.switch1"
-          active-color="#13ce66"
-          inactive-color="#ff4949"
-        />
-      </el-form-item>
-    </template>
-  </hb-ui-form>
+  />
 </template>
 
 <script lang="ts">
@@ -54,15 +36,13 @@ export default {
             // onChange: (e) => { console.log('change', e) },
             on: {
               change: (e)=> {console.log('onChange', e)}
-            }
+            },
           }
         },
         () => 111,
-        'attack',
         {
           label: '身高', 
           prop: 'height',
-          slot: true,
         }
         // { label: '时间', prop: 'time', 
         //   datePicker: { type: 'daterange' }
