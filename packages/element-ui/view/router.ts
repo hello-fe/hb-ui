@@ -18,9 +18,17 @@ export const routes: RouteConfig[] = [
     },
   },
   {
+    path: '/form-vue',
+    name: 'Form(.vue)',
+    component: ()=> import('./form/basic-vue/index.vue'),
+    meta: {
+      icon: 'el-icon-menu'
+    },
+  },
+  {
     path: '/form-tsx',
     name: 'Form(.tsx)',
-    component: () => import('./form/basic-vue'),
+    component: () => import('./form/basic-tsx'),
     meta: {
       icon: 'el-icon-menu',
     },

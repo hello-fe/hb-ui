@@ -18,11 +18,13 @@ const App: Component = {
           <el-aside width="200px">
             <el-menu default-active="3" class="el-menu-vertical-demo">
               {routes.map((route, index) => (
-                <el-menu-item index={String(index + 1)}>
-                  <i class={route.meta?.icon || 'el-icon-menu'}></i>
-                  <router-link class="router-link" slot="title" to={route.path}>{route.name}</router-link>
-                </el-menu-item>
-              ))}
+                  <router-link class='router-link' to={route.path}>
+                    <el-menu-item index={String(index + 1)}>
+                      <i class={route.meta?.icon || 'el-icon-menu'} />
+                      {route.name}
+                    </el-menu-item>
+                  </router-link>
+                ))}
             </el-menu>
           </el-aside>
 

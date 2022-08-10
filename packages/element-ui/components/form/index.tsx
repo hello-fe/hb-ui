@@ -26,7 +26,7 @@ export interface FormElement extends Partial<ElFormItem> {
   datePicker?: HBDatePicker
 }
 export interface FormProps {
-  elements: (FormElement | (() => JSX_ELEMENT))[]
+  elements: (FormElement | (() => JSX_ELEMENT) | string)[]
   onSubmit?: () => Promise<void | boolean> | void | boolean
   onReset?: () => void
   handle?: ElForm
@@ -37,15 +37,18 @@ export interface FormProps {
 
 const filterKey = 'filterData'
 
-function convergenceEvent<T>(data: T) {
+function convergenceEvent<T extends { on?: KVA }>({ on, ...rest }: T) {
   return {
-    ...data,
-    on: Object.entries(data)
-      .map(([k, v]) => {
-        if (k.startsWith('on') && k !== 'on')
-          return { [k.slice(2).toLowerCase()]: v }
-      })
-      .reduce((a, b) => ({ ...a, ...b }), {}),
+    ...rest,
+    on: {
+      ...on,
+      ...Object.entries(rest)
+        .map(([k, v]) => {
+          if (k.startsWith('on') && k !== 'on')
+            return { [k.slice(2).toLowerCase()]: v }
+        })
+        .reduce((a, b) => ({ ...a, ...b }), {}),
+    },
   }
 }
 
@@ -163,7 +166,7 @@ const FormElementUI: Component = {
           <Select
             v-model={props.model[prop]}
             {...{
-              props: { filterable: true, ...omit },
+              props: { clearable: true, filterable: true, ...omit },
               on,
               attrs: { placeholder: '请选择', ...attrs },
             }}
@@ -210,13 +213,14 @@ const FormElementUI: Component = {
       <ElementForm ref='hb-ui-form' {...{ props: { inline: true, ...props } }}>
         {elements.map((element) => {
           if (typeof element === 'function') return element()
+          if (typeof element === 'string') return this.$slots[element]
           const { $scopedSlots, ...itemOmit } = element
           return (
             <ElementFormItem
-              scopedSlots= {$scopedSlots}
+              scopedSlots={$scopedSlots}
               {...{ props: itemOmit }}
             >
-              {renderElement(element)}
+              { element.slot ? this.$slots[element.prop]: renderElement(element) }
             </ElementFormItem>
           )
         })}

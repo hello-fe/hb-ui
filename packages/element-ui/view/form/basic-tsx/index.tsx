@@ -31,9 +31,11 @@ const FormTsx: Component = {
               { value: '2', label: 'two' },
             ],
             on: {
-              // change: (e) => { console.log('change', e) },
+              change: (e) => { console.log('change', e) },
+              input: (e) => {console.log('input', e)},
             },
-            onChange: (e)=>{console.log(22,e)},
+            // onChange: (e)=>{console.log(22, e)},
+            // onInput: (e)=>{console.log(33, e)},
             clearable: true,
           },
           rules: { required: true, message: '请选择地区' },
@@ -53,7 +55,7 @@ const FormTsx: Component = {
               // focus: (e)=>console.log('focus',e),
             },
             maxlength: 2,
-            onChange: (e)=>{console.log(222,e)},
+            // onChange: (e)=>{console.log(222,e)},
             clearable: false,
           },
           $scopedSlots: {
