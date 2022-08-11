@@ -58,8 +58,11 @@ export interface TableProps<RowType = KVA> {
   query?: (args: {
     /** 请求次数，当不想自动发起首次请求时可以判断 count==1 返回 undefined 打断请求 */
     count: number
-    pagination: TablePagination
+    pagination?: TablePagination
+    /** 来自 handle.query 透传 */
+    payload?: any
   }) => Promise<({ data: RowType[] } & TablePagination) | undefined>
+  /** 关闭分页传递 null (false 会引起 TablePagination 类型推导问题) */
   pagination?: null | {
     /** Current page number */
     currentPage: number
@@ -71,7 +74,7 @@ export interface TableProps<RowType = KVA> {
     props?: Partial<ElPagination & KVA>
   }
   handle?: {
-    reload: (pagination: TablePagination) => void
+    query: (args?: Omit<Parameters<TableQuery<RowType>>[0], 'count'>) => void
   }
   /** 泛化 */
   props?: Partial<ElTable & KVA>
@@ -128,9 +131,13 @@ const TableElementUI: Component<
     const _this = this
 
     if (props.handle) {
-      props.handle.reload = function reload(pagination) {
-        pagination && (this.pagination2 = pagination)
-        _this.queryHandle()
+      props.handle.query = function query(args) {
+        /**
+         * `setPage` 应该在 `queryHandle` 中调用
+         * `args.pagination` 应该只包含 `current` `pageSize` `total`
+         */
+        // args?.pagination && (this.pagination2 = pagination)
+        _this.queryHandle(args)
       }
     }
 
@@ -155,24 +162,39 @@ const TableElementUI: Component<
   },
   methods: {
     onCurrentChange(current) {
+      // TODO: 与 `queryHandle` 中的 `this.pagination2 = pagination2` 操作重复。如果 `query` 返回 fase 会造成操作“非幂等”
       this.pagination2.currentPage = current
       this.queryHandle()
     },
     onSizeChange(size) {
+      // TODO: 与 `queryHandle` 中的 `this.pagination2 = pagination2` 操作重复。如果 `query` 返回 fase 会造成操作“非幂等”
       this.pagination2.pageSize = size
       this.queryHandle()
     },
-    async queryHandle() {
+    async queryHandle(args: Parameters<TableHandle['query']>[0] = {}) {
       const props = this.$props as TableProps
+      const page2 = this.pagination2 as TablePagination
 
       if (!props.query) return
       this.queryCount++
-      const result = await props.query({ count: this.queryCount, pagination: this.pagination2 })
+      const pagination = args.pagination ?? (typeof page2 === 'object' ? {
+        currentPage: page2.currentPage,
+        pageSize: page2.pageSize,
+        total: page2.total,
+      } : undefined)
+
+      const result = await props.query({
+        count: this.queryCount,
+        pagination,
+        payload: args.payload,
+      })
       if (!result) return // 打断请求 or 无效请求
 
-      const { data, ...pagination } = result
+      const { data, ...pagination2 } = result
       this.tableData = data
-      this.pagination2 = pagination
+      if (typeof this.pagination2 === 'object') {
+        this.pagination2 = pagination2
+      }
     },
   },
   render() {
