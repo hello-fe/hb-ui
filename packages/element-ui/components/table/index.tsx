@@ -77,11 +77,11 @@ export interface TableProps<RowType = KVA> {
   props?: Partial<ElTable & KVA>
 }
 
-export type TableColumn<RecordType = KVA> = TableProps<RecordType>['columns'][0]
-export type TableData<RecordType = KVA> = TableProps<RecordType>['data'][0]
-export type TableQuery<RecordType = KVA> = TableProps<RecordType>['query']
-export type TablePagination = TableProps['pagination']
-export type TableHandle<RecordType = KVA> = TableProps<RecordType>['handle']
+export type TableColumn<RowType = KVA> = TableProps<RowType>['columns'][0]
+export type TableData<RowType = KVA> = TableProps<RowType>['data'][0]
+export type TableQuery<RowType = KVA> = TableProps<RowType>['query']
+export type TablePagination = Pick<TableProps['pagination'], 'currentPage' | 'pageSize' | 'total'>
+export type TableHandle<RowType = KVA> = TableProps<RowType>['handle']
 
 // 这里与 export default 类型并不匹配，Vue2 提供的 ts 并不完整
 const TableElementUI: Component<
