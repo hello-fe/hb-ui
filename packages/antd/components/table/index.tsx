@@ -132,9 +132,12 @@ function TableAntd<RecordType = KVA, FormValues = KVA>(props: TableProps<RecordT
     dataSource: data,
     onChange(pagination, filters, sorter, extra) {
       onChange?.(pagination, filters, sorter, extra)
-      // TODO: 与 `queryHandle` 中的 `setPage` 操作重复。如果 `query` 返回 fase 会造成操作“非幂等”
-      setPage(pagination)
-      queryHandle()
+
+      // works without `props.query`
+      // !query && setPage(pagination)
+
+      const { current, pageSize, total } = pagination
+      queryHandle({ pagination: { current, pageSize, total } })
     },
     pagination: page,
     ...omit,
