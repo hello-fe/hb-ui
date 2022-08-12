@@ -33,9 +33,12 @@ export interface TableProps<RecordType = KVA> extends Omit<AntdTableProps<Record
     // tooltip?: TooltipProps
   })[]
   query?: (args: {
-    /** 请求次数，当不想自动发起首次请求时可以判断 count==1 返回 undefined 打断请求 */
+    /** 请求次数，当不想自动发起首次请求时可以判断 count==1 返回 undefined 打断请求 - 内部维护 */
     count: number
-    pagination?: TablePaginationConfig
+    /** 与后端交互只需 `current` `pageSize` `total` 三个属性即可 */
+    pagination?: Partial<Pick<TablePaginationConfig, 'current' | 'pageSize' | 'total'>>
+    /** 来自 handle.query 透传 */
+    payload?: any
   }) => Promise<({ data: RecordType[] } & Partial<Pick<TablePaginationConfig, 'current' | 'pageSize' | 'total'>>) | void>
   handle?: {
     query: (args?: Omit<Parameters<TableQuery<RecordType>>[0], 'count'>) => void
@@ -67,13 +70,14 @@ function TableAntd<RecordType = KVA, FormValues = KVA>(props: TableProps<RecordT
   useLayoutEffect(() => { unMounted.current = false }, []) // 🚧-①
 
   // 请求
-  const queryHandle = async () => {
+  const queryHandle = async (args: Parameters<TableHandle['query']>[0] = {}) => {
     if (!query) return
     queryCount.current++
 
     const result = await query({
       count: queryCount.current,
       pagination: page ? page : undefined,
+      payload: args.payload
     })
     if (!result) return // 打断请求 or 无效请求
 
