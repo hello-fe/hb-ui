@@ -57,7 +57,7 @@ function FormAntd(props: FormProps) {
     lastItem,
     onSubmit,
     onReset,
-    // 🤔 如果外部需要 FormInstance 可以从外部传递进来
+    // 🤔 如果外部需要 FormInstance 可以从外部传递进来；可能会掉进 hooks 陷阱！
     form = Form.useForm()[0],
     className = '',
     ...omitFormProps
