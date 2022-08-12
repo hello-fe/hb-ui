@@ -33,8 +33,8 @@ export default () => {
       return {
         data: data.map(d => ({ ...d, date: Date.now() })),
         total: 100,
-        pageSize: 10,
-        current: 4,
+        pageSize: args.pagination.pageSize,
+        current: args.pagination.current,
       }
     },
     columns: [
