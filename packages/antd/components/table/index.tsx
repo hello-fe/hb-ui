@@ -38,7 +38,7 @@ export interface TableProps<RecordType = KVA> extends Omit<AntdTableProps<Record
     pagination?: TablePaginationConfig
   }) => Promise<({ data: RecordType[] } & Partial<Pick<TablePaginationConfig, 'current' | 'pageSize' | 'total'>>) | void>
   handle?: {
-    reload: (pagination?: TablePaginationConfig) => void
+    query: (args?: Omit<Parameters<TableQuery<RecordType>>[0], 'count'>) => void
     form: FormInstance // TODO: FormInstance<FormValues>
   }
 }
@@ -92,13 +92,8 @@ function TableAntd<RecordType = KVA, FormValues = KVA>(props: TableProps<RecordT
   // handle 挂载
   useEffect(() => {
     if (handle) {
-      Object.assign(handle, {
-        reload(page) {
-          page && setPage(page)
-          queryHandle()
-        },
-        form,
-      } as TableHandle)
+      handle.query = queryHandle
+      handle.form = form
     }
   }, [handle])
 
