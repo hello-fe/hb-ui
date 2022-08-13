@@ -41,7 +41,7 @@ export interface FormProps<Values = KVA> extends AntdFormProps<Values> {
       rangePicker?: RangePickerProps
       checkboxGroup?: CheckboxGroupProps
       radioGroup?: RadioGroupProps
-      switch2?: SwitchProps
+      switch?: SwitchProps
       col?: ColProps
 
       // TODO: render props(小)
@@ -126,7 +126,7 @@ function renderFormItem<Values = KVA>(
     rangePicker,
     checkboxGroup,
     radioGroup,
-    switch2,
+    switch: switch2,
     ...omitItemProps
   } = item
 
