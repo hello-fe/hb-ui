@@ -8,6 +8,8 @@ import {
   Radio,
   Switch,
   Button,
+  Row,
+  Col,
 } from 'antd'
 import type {
   FormInstance,
@@ -20,6 +22,8 @@ import type { DatePickerProps, RangePickerProps } from 'antd/es/date-picker'
 import type { CheckboxGroupProps } from 'antd/es/checkbox'
 import type { RadioGroupProps } from 'antd/es/radio'
 import type { SwitchProps } from 'antd/es/switch'
+import type { RowProps } from 'antd/es/row'
+import type { ColProps } from 'antd/es/col'
 import type { KVA } from '../../types/common'
 
 /**
@@ -38,18 +42,23 @@ export interface FormProps<Values = KVA> extends AntdFormProps<Values> {
       checkboxGroup?: CheckboxGroupProps
       radioGroup?: RadioGroupProps
       switch2?: SwitchProps
+      col?: ColProps
+
+      // TODO: render props(小)
     })
-    // render function
+    // render function(大)
     | (() => JSX.Element)
   )[]
   /** 预留给 [提交/重置] 的位置 */
-  lastItem?: AntdFormItemProps | ((form: FormInstance<Values>) => JSX.Element)
+  lastItem?:
+  | (AntdFormItemProps & { col?: ColProps /* TODO: render props(小) */ })
+  | ((form: FormInstance<Values>) => JSX.Element) // render function(大)
   onSubmit?: (values: Values, form: FormInstance<Values>) => void
+  row?: RowProps
+  col?: ColProps
 }
 
 export type FormItemProps<Values = KVA> = FormProps<Values>['items'][0]
-
-const itemStyleDefault: React.CSSProperties = { width: 350, marginBottom: 14 }
 
 function FormAntd(props: FormProps) {
   const {
@@ -60,6 +69,8 @@ function FormAntd(props: FormProps) {
     // 🤔 如果外部需要 FormInstance 可以从外部传递进来；可能会掉进 hooks 陷阱！
     form = Form.useForm()[0],
     className = '',
+    row = { gutter: [0, 14] },
+    col = { span: 24 / 3 },
     ...omitFormProps
   } = props
 
@@ -78,18 +89,24 @@ function FormAntd(props: FormProps) {
       wrapperCol={{ span: 17 }}
       {...omitFormProps}
     >
-      {items.map(renderFormItem)}
-      {typeof lastItem === 'function' ? lastItem(form) : (
-        <Form.Item
-          key='last-item'
-          label=''
-          style={{ ...itemStyleDefault }}
-          {...lastItem}
-        >
-          <Button type='primary' onClick={clickSubmit}>提交</Button>
-          <Button onClick={() => form.resetFields()}>重置</Button>
-        </Form.Item>
-      )}
+      <Row {...row}>
+        {items.map((item, index, arr) => typeof item === 'function'
+          ? item()
+          : <Col {...(item.col || col)} key={index}>{renderFormItem(item, index, arr)}</Col>
+        )}
+        {typeof lastItem === 'function' ? lastItem(form) : (
+          <Col {...(lastItem?.col || col)}>
+            <Form.Item
+              key='last-item'
+              label=' '
+              {...lastItem}
+            >
+              <Button type='primary' onClick={clickSubmit}>提交</Button>
+              <Button style={{ marginLeft: 10 }} onClick={() => form.resetFields()}>重置</Button>
+            </Form.Item>
+          </Col>
+        )}
+      </Row>
     </Form>
   )
 }
@@ -99,6 +116,7 @@ function renderFormItem<Values = KVA>(
   index: number,
   items: FormItemProps<Values>[],
 ): JSX.Element {
+  // never used, for ts check
   if (typeof item === 'function') return item()
 
   const {
@@ -153,13 +171,14 @@ function renderFormItem<Values = KVA>(
     node = defaultNode
   }
 
-  return <Form.Item
-    key={String(item.name || index)}
-    style={{ ...itemStyleDefault }}
-    {...omitItemProps}
-  >
-    {node}
-  </Form.Item>
+  return (
+    <Form.Item
+      key={String(item.name || index)}
+      {...omitItemProps}
+    >
+      {node}
+    </Form.Item>
+  )
 }
 
 export default FormAntd
