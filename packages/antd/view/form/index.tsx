@@ -16,6 +16,7 @@ export default () => {
       {
         label: '姓名',
         name: 'name',
+        rules: [{ required: true, message: '请输入姓名！' }],
       },
       {
         label: '岗位',
@@ -57,7 +58,7 @@ export default () => {
       {
         label: '状态',
         name: 'status',
-        switch2: {
+        switch: {
           checkedChildren: '在职',
           unCheckedChildren: '离职',
           // Warning: [antd: Switch] `value` is not a valid prop, do you mean `checked`?

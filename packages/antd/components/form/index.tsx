@@ -8,6 +8,8 @@ import {
   Radio,
   Switch,
   Button,
+  Row,
+  Col,
 } from 'antd'
 import type {
   FormInstance,
@@ -20,6 +22,8 @@ import type { DatePickerProps, RangePickerProps } from 'antd/es/date-picker'
 import type { CheckboxGroupProps } from 'antd/es/checkbox'
 import type { RadioGroupProps } from 'antd/es/radio'
 import type { SwitchProps } from 'antd/es/switch'
+import type { RowProps } from 'antd/es/row'
+import type { ColProps } from 'antd/es/col'
 import type { KVA } from '../../types/common'
 
 /**
@@ -37,13 +41,21 @@ export interface FormProps<Values = KVA> extends AntdFormProps<Values> {
       rangePicker?: RangePickerProps
       checkboxGroup?: CheckboxGroupProps
       radioGroup?: RadioGroupProps
-      switch2?: SwitchProps
+      switch?: SwitchProps
+      col?: ColProps
+
+      // TODO: render props(小)
     })
-    // render function
+    // render function(大)
     | (() => JSX.Element)
   )[]
-  footer?: JSX.Element
+  /** 预留给 [提交/重置] 的位置 */
+  lastItem?:
+  | (AntdFormItemProps & { col?: ColProps /* TODO: render props(小) */ })
+  | ((form: FormInstance<Values>) => JSX.Element) // render function(大)
   onSubmit?: (values: Values, form: FormInstance<Values>) => void
+  row?: RowProps
+  col?: ColProps
 }
 
 export type FormItemProps<Values = KVA> = FormProps<Values>['items'][0]
@@ -51,11 +63,14 @@ export type FormItemProps<Values = KVA> = FormProps<Values>['items'][0]
 function FormAntd(props: FormProps) {
   const {
     items,
-    footer,
+    lastItem,
     onSubmit,
     onReset,
+    // 🤔 如果外部需要 FormInstance 可以从外部传递进来；可能会掉进 hooks 陷阱！
     form = Form.useForm()[0],
     className = '',
+    row,
+    col = { span: 24 / 3 },
     ...omitFormProps
   } = props
 
@@ -68,16 +83,29 @@ function FormAntd(props: FormProps) {
     <Form
       className={'hb-ui-form ' + className}
       form={form}
-      layout='inline'
+      colon={false}
+      labelCol={{ span: 7 }}
+      wrapperCol={{ span: 17 }}
       {...omitFormProps}
     >
-      {items.map(renderFormItem)}
-      {footer !== undefined ? footer : (
-        <Form.Item>
-          <Button type='primary' onClick={clickSubmit}>提交</Button>
-          <Button onClick={() => form.resetFields()}>重置</Button>
-        </Form.Item>
-      )}
+      <Row {...row}>
+        {items.map((item, index, arr) => typeof item === 'function'
+          ? item()
+          : <Col {...(item.col || col)} key={index}>{renderFormItem(item, index, arr)}</Col>
+        )}
+        {typeof lastItem === 'function' ? lastItem(form) : (
+          <Col {...(lastItem?.col || col)}>
+            <Form.Item
+              key='last-item'
+              label=' '
+              {...lastItem}
+            >
+              <Button type='primary' onClick={clickSubmit}>提交</Button>
+              <Button style={{ marginLeft: 10 }} onClick={() => form.resetFields()}>重置</Button>
+            </Form.Item>
+          </Col>
+        )}
+      </Row>
     </Form>
   )
 }
@@ -87,6 +115,7 @@ function renderFormItem<Values = KVA>(
   index: number,
   items: FormItemProps<Values>[],
 ): JSX.Element {
+  // never used, for ts check
   if (typeof item === 'function') return item()
 
   const {
@@ -96,7 +125,7 @@ function renderFormItem<Values = KVA>(
     rangePicker,
     checkboxGroup,
     radioGroup,
-    switch2,
+    switch: switch2,
     ...omitItemProps
   } = item
 
@@ -111,7 +140,7 @@ function renderFormItem<Values = KVA>(
     const { options = [] } = select
 
     node = (
-      <Select {...select}>
+      <Select placeholder={`请选择${item.label || ''}`} {...select}>
         {options.map((opt, idx) => (
           <Select.Option key={idx} {...opt}>{opt.label}</Select.Option>
         ))}
@@ -141,7 +170,14 @@ function renderFormItem<Values = KVA>(
     node = defaultNode
   }
 
-  return <Form.Item key={String(item.name || index)} {...omitItemProps}>{node}</Form.Item>
+  return (
+    <Form.Item
+      key={String(item.name || index)}
+      {...omitItemProps}
+    >
+      {node}
+    </Form.Item>
+  )
 }
 
 export default FormAntd
