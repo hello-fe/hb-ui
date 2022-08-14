@@ -28,7 +28,7 @@ const App: Component = {
 
         <el-container>
           <el-aside width="200px">
-            <el-menu default-active="1" class="el-menu-vertical-demo">
+            <el-menu class="el-menu-vertical-demo">
               {routes.map((route, index) => (
                 <el-menu-item
                   index={String(index + 1)}
