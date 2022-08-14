@@ -58,7 +58,7 @@ export interface FormProps<Values = KVA> extends AntdFormProps<Values> {
   col?: ColProps
 }
 
-export type FormItemProps<Values = KVA> = FormProps<Values>['items'][0]
+export type FormItemProps<Values = KVA> = FormProps<Values>['items'][number]
 
 function FormAntd(props: FormProps) {
   const {
@@ -66,7 +66,8 @@ function FormAntd(props: FormProps) {
     lastItem,
     onSubmit,
     onReset,
-    // 🤔 如果外部需要 FormInstance 可以从外部传递进来；可能会掉进 hooks 陷阱！
+    // 🤔 如果外部需要 FormInstance 可以从外部传递进来
+    // 默认值使用不当可能会掉进 hooks 陷阱！
     form = Form.useForm()[0],
     className = '',
     row,
@@ -137,14 +138,8 @@ function renderFormItem<Values = KVA>(
   if (input) {
     node = defaultNode
   } else if (select) {
-    const { options = [] } = select
-
     node = (
-      <Select placeholder={`请选择${item.label || ''}`} {...select}>
-        {options.map((opt, idx) => (
-          <Select.Option key={idx} {...opt}>{opt.label}</Select.Option>
-        ))}
-      </Select>
+      <Select placeholder={`请选择${item.label || ''}`} {...select} />
     )
   } else if (datePicker) {
     node = (

@@ -80,8 +80,8 @@ export interface TableProps<RowType = KVA> {
   props?: Partial<ElTable & KVA>
 }
 
-export type TableColumn<RowType = KVA> = TableProps<RowType>['columns'][0]
-export type TableData<RowType = KVA> = TableProps<RowType>['data'][0]
+export type TableColumn<RowType = KVA> = TableProps<RowType>['columns'][number]
+export type TableData<RowType = KVA> = TableProps<RowType>['data'][number]
 export type TableQuery<RowType = KVA> = TableProps<RowType>['query']
 export type TablePagination = Pick<TableProps['pagination'], 'currentPage' | 'pageSize' | 'total'>
 export type TableHandle<RowType = KVA> = TableProps<RowType>['handle']
