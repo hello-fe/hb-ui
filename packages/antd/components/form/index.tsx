@@ -69,7 +69,7 @@ function FormAntd(props: FormProps) {
     // 🤔 如果外部需要 FormInstance 可以从外部传递进来；可能会掉进 hooks 陷阱！
     form = Form.useForm()[0],
     className = '',
-    row = { gutter: [0, 14] },
+    row,
     col = { span: 24 / 3 },
     ...omitFormProps
   } = props
@@ -83,7 +83,6 @@ function FormAntd(props: FormProps) {
     <Form
       className={'hb-ui-form ' + className}
       form={form}
-      layout='inline'
       colon={false}
       labelCol={{ span: 7 }}
       wrapperCol={{ span: 17 }}
