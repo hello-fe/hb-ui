@@ -61,6 +61,14 @@ const AppLayout = () => {
                   navigate('/table')
                 },
               },
+              {
+                key: '/table-edit',
+                icon: <VideoCameraOutlined />,
+                label: 'Table-edit',
+                onClick() {
+                  navigate('/table-edit')
+                },
+              },
             ]}
           />
         </Sider>
