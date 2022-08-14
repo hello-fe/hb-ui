@@ -96,7 +96,9 @@ export default () => {
 
   return (
     <>
-      <Button type='primary' onClick={clickViewData}>查看数据</Button>
+      <div style={{ marginBottom: 10 }}>
+        <Button type='primary' onClick={clickViewData}>查看数据</Button>
+      </div>
       <Table {...tableProps} />
     </>
   )
