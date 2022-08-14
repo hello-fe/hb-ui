@@ -42,7 +42,7 @@ const TableTsx: Component = {
       }
     } as TableQuery,
     reload() {
-      this.tableHandle.reload()
+      this.tableHandle.query({ payload: Math.random() })
     },
   },
   render() {
