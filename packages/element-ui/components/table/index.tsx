@@ -139,18 +139,10 @@ const TableElementUI: Component<
   mounted() {
     const props = this.$props as TableProps
     this.queryCount = 0
-    const _this = this
 
     if (props.handle) {
-      props.handle.query = function query(args) {
-        /**
-         * `setPage` 应该在 `queryHandle` 中调用
-         * `args.pagination` 应该只包含 `current` `pageSize` `total`
-         */
-        // args?.pagination && (this.pagination2 = pagination)
-        _this.queryHandle(args)
-      }
-      props.handle.form = _this.$refs['hb-ui-table-form'] as ElForm
+      props.handle.query = this.queryHandle
+      props.handle.form = this.$refs['hb-ui-table-form'] as ElForm
     }
 
     this.queryHandle()
