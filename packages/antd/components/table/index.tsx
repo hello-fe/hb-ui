@@ -7,7 +7,6 @@ import React, {
 import {
   Form,
   Table,
-  Tooltip,
 } from 'antd'
 import type { FormInstance } from 'antd/es/form'
 import type { InputProps as AntdInputProps } from 'antd/es/input'
@@ -17,7 +16,6 @@ import type {
   TablePaginationConfig,
   TableProps as AntdTableProps,
 } from 'antd/es/table'
-import type { TooltipProps } from 'antd/es/tooltip'
 import type {
   KVA,
 } from '../../types/common'
@@ -29,8 +27,6 @@ export interface TableProps<RecordType = KVA> extends Omit<AntdTableProps<Record
     // TODO: Form 表单元素
     input?: AntdInputProps
     select?: AntdSelectProps
-
-    // tooltip?: TooltipProps
   })[]
   query?: (args: {
     /** 请求次数，当不想自动发起首次请求时可以判断 count==1 返回 undefined 打断请求 - 内部维护 */
@@ -147,39 +143,5 @@ function TableAntd<RecordType = KVA, FormValues = KVA>(props: TableProps<RecordT
     <Table {...tableProps as any} />
   )
 }
-
-/*
-2022-08-02: 暂不扩展，在 tsx 下 antd 提供的 render 足够灵活
-function renderColumn(column: TableColumn, index: number, columns: TableColumn[]): TableColumn {
-  const {
-    input,
-    select,
-    tooltip,
-  } = column
-  let render: TableColumn['render']
-  if (input) {
-    // TODO: implementation
-  } else if (select) {
-  } else if (tooltip) {
-    render = (value, record, index) => (
-      <Tooltip
-        placement='top'
-        title={value}
-        {...tooltip}
-      >
-        {value}
-      </Tooltip>
-    )
-  }
-  if (render) {
-    const originalRender = column.render
-    column.render = (value, record, index) => {
-      const rendered = render(value, record, index)
-      return originalRender ? originalRender(rendered, record, index) : rendered
-    }
-  }
-  return column
-}
-*/
 
 export default TableAntd
