@@ -6,6 +6,7 @@ import router from './router'
 import App from './App'
 
 import 'element-ui/lib/theme-chalk/index.css'
+import './global.css'
 
 Vue.use(VueRouter)
 Vue.use(ElementUI, { locale, size: 'mini' })

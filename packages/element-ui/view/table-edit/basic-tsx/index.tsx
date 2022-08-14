@@ -10,6 +10,7 @@ export interface RowType {
 }
 
 const TableTsx: Component = {
+  name: 'table-edit',
   created() {
     this.tableHandle = {} as TableHandle
 
@@ -44,6 +45,9 @@ const TableTsx: Component = {
     reload() {
       this.tableHandle.query({ payload: Math.random() })
     },
+    submitTable() {
+      console.log(this.tableHandle)
+    },
   },
   render() {
     const tableProps: TableProps<RowType> = {
@@ -54,13 +58,15 @@ const TableTsx: Component = {
         {
           label: '姓名',
           prop: 'name',
-          tooltip: {},
+          tooltip: {
+            render: ({ row }) => <span style='color:#fc6470;'>芳龄: {row.age}</span>,
+          },
         },
         {
           label: '年龄',
           prop: 'age',
-          tooltip: {
-            render: ({ row }) => <span style='color:#fc6470;'>芳龄: {row.age}</span>,
+          input: {
+            rules: { required: true, message: '请输入年龄！' },
           },
         },
         {
@@ -85,6 +91,9 @@ const TableTsx: Component = {
 
     return (
       <div>
+        <div style="padding-bottom:10px; margin-bottom:10px; border-bottom:1px solid #dedede;">
+          <Button type="primary" on-click={this.submitTable}>提交</Button>
+        </div>
         <Table {...{ props: tableProps }} />
       </div>
     )
