@@ -1,10 +1,16 @@
 import { Component } from 'vue'
 import {
+  Form,
+  FormItem,
+  Input,
+  Select,
+  Option,
   Pagination,
   Table as ElementTable,
   TableColumn as ElementTableColumn,
   Tooltip as ElementTooltip,
 } from 'element-ui'
+import { ElForm } from 'element-ui/types/form'
 import { ElFormItem } from 'element-ui/types/form-item'
 import { ElInput } from 'element-ui/types/input'
 import { ElOption } from 'element-ui/types/option'
@@ -75,13 +81,14 @@ export interface TableProps<RowType = KVA> {
   }
   handle?: {
     query: (args?: Omit<Parameters<TableQuery<RowType>>[0], 'count'>) => void
+    form: ElForm
   }
   /** 泛化 */
   props?: Partial<ElTable & KVA>
 }
 
 export type TableColumn<RowType = KVA> = TableProps<RowType>['columns'][0]
-export type TableData<RowType = KVA> = TableProps<RowType>['data'][0]
+export type tableData<RowType = KVA> = TableProps<RowType>['data'][0]
 export type TableQuery<RowType = KVA> = TableProps<RowType>['query']
 export type TablePagination = Pick<TableProps['pagination'], 'currentPage' | 'pageSize' | 'total'>
 export type TableHandle<RowType = KVA> = TableProps<RowType>['handle']
@@ -90,7 +97,9 @@ export type TableHandle<RowType = KVA> = TableProps<RowType>['handle']
 const TableElementUI: Component<
   () => {
     loading: boolean,
-    tableData?: TableData[],
+    formModel: {
+      tableData: tableData[]
+    },
     pagination2?: Partial<Pagination>
   },
   {
@@ -105,7 +114,9 @@ const TableElementUI: Component<
   data() {
     return {
       loading: false,
-      tableData: undefined,
+      formModel: {
+        tableData: [],
+      },
       // 默认的 pagination 配置
       pagination2: { currentPage: 1, pageSize: 10, total: 0 },
     }
@@ -125,7 +136,7 @@ const TableElementUI: Component<
     // @ts-ignore
     handle: Object,
   },
-  created() {
+  mounted() {
     const props = this.$props as TableProps
     this.queryCount = 0
     const _this = this
@@ -139,6 +150,7 @@ const TableElementUI: Component<
         // args?.pagination && (this.pagination2 = pagination)
         _this.queryHandle(args)
       }
+      props.handle.form = _this.$refs['hb-ui-table-form'] as ElForm
     }
 
     this.queryHandle()
@@ -147,7 +159,7 @@ const TableElementUI: Component<
     data: {
       handler(d) {
         // 合并传入参数
-        d && (this.tableData = d)
+        d && (this.formModel.tableData = d)
       },
       immediate: true,
     },
@@ -191,7 +203,7 @@ const TableElementUI: Component<
       if (!result) return // 打断请求 or 无效请求
 
       const { data, ...pagination2 } = result
-      this.tableData = data
+      this.formModel.tableData = data
       if (typeof this.pagination2 === 'object') {
         this.pagination2 = pagination2
       }
@@ -203,24 +215,31 @@ const TableElementUI: Component<
 
     return (
       <div class="hb-ui-table">
-        <ElementTable
-          v-loading={this.loading}
-          data={this.tableData}
-          on-selection-change={props.props?.['on-selection-change'] || noop}
-          {...{ props: props.props }}
+        <Form
+          // @ts-ignore
+          ref="hb-ui-table-form"
+          // https://github.com/ElemeFE/element/issues/20286
+          {...{ props: { model: this.formModel } } as any}
         >
-          {props.columns.map((column, index, columns) => (
-            // 1. 修复 type=selection 复选排版错位 BUG
-            // 2. 修复 type=other 更加可控的渲染
-            column.type
-              ? <ElementTableColumn  {...{ props: column }}>{column.render}</ElementTableColumn>
-              : <ElementTableColumn
-                {...{ props: withAutoFixed({ column, index, columns }) }}
-              >
-                {renderColumn.call(_this, column, index)}
-              </ElementTableColumn>
-          ))}
-        </ElementTable>
+          <ElementTable
+            v-loading={this.loading}
+            data={this.formModel.tableData}
+            on-selection-change={props.props?.['on-selection-change'] || noop}
+            {...{ props: props.props }}
+          >
+            {props.columns.map((column, index, columns) => (
+              // 1. 修复 type=selection 复选排版错位 BUG
+              // 2. 修复 type=other 更加可控的渲染
+              column.type
+                ? <ElementTableColumn {...{ props: column }}>{column.render}</ElementTableColumn>
+                : <ElementTableColumn
+                  {...{ props: withAutoFixed({ column, index, columns }) }}
+                >
+                  {renderColumn.call(_this, column, index)}
+                </ElementTableColumn>
+            ))}
+          </ElementTable>
+        </Form>
         {props.pagination !== null && <Pagination
           // @ts-ignore
           background
@@ -273,8 +292,34 @@ function renderColumn(column: TableColumn, index: number) {
   if (typeof render === 'function') {
     node = render
   } else if (typeof input === 'object') {
-    // TODO: input, select 属于 Form 元素，涉及到校验功能
-  } else if (typeof select === 'object') { }
+    const { placeholder = '请输入', rules, ...inputOmit } = input
+    node = ({ row, $index }) => (
+      // @ts-ignore
+      <FormItem prop={formTableProp($index, prop)} rules={rules}>
+        {/*  @ts-ignore */}
+        <Input v-model={row[prop]} placeholder={placeholder} {...{ props: inputOmit }} />
+      </FormItem>
+    )
+  } else if (typeof select === 'object') {
+    const { options: opts, placeholder = '请选择', rules, ...selectOmit } = select
+    node = args => {
+      const { row, $index } = args
+      const options = typeof opts === 'function' ? opts(args) : opts
+      return (
+        // @ts-ignore
+        <FormItem prop={formTableProp($index, prop)} rules={rules}>
+          {/* @ts-ignore */}
+          <Select v-model={row[prop]} placeholder={placeholder} {...{ props: selectOmit }}>
+            {options.map((opt, idx) => {
+              const { value, label, ...optOmit } = opt
+              // @ts-ignore
+              return <Option key={idx} value={value} {...{ props: optOmit }}>{label}</Option>
+            })}
+          </Select>
+        </FormItem>
+      )
+    }
+  }
 
   // render raw string
   if (!node) {
@@ -311,7 +356,7 @@ function withClickColumnLog(render: TableColumn['render']) {
         }
       }
       // 将当前行输出到 log
-      console.log(obj.row)
+      console.log(JSON.parse(JSON.stringify(obj.row)))
     }
     return n
   }
@@ -346,6 +391,11 @@ function ensureNodeValueVNode(node: JSX_ELEMENT, tag = 'span') {
   return (node == null || typeof node !== 'object')
     ? this.$createElement(tag, node)
     : node
+}
+
+function formTableProp($index: number, prop: string) {
+  // 🚧-①: 格式必须是 data.index.prop | data[index]prop 无效
+  return `tableData.${$index}.${prop}`
 }
 
 // TODO: @vue/composition-api 中返回的是 VueProxy
