@@ -76,8 +76,12 @@ function FormAntd(props: FormProps) {
   } = props
 
   const clickSubmit = async () => {
-    const values = await form.validateFields()
-    onSubmit?.(values, form)
+    try {
+      const values = await form.validateFields()
+      onSubmit?.(values, form)
+    } catch (error) {
+      console.warn(error)
+    }
   }
 
   return (
