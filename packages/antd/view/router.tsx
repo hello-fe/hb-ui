@@ -5,6 +5,7 @@ import {
 import Layout from './Layout'
 import Form from './form'
 import Table  from './table'
+import TableEdit  from './table-edit'
 
 // https://stackblitz.com/github/remix-run/react-router/tree/main/examples/route-objects?file=src%2FApp.tsx
 export const routes: RouteObject[] = [
@@ -19,6 +20,10 @@ export const routes: RouteObject[] = [
       {
         path: '/table',
         element: <Table />,
+      },
+      {
+        path: '/table-edit',
+        element: <TableEdit />,
       },
     ],
   },
