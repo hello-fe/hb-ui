@@ -36,16 +36,15 @@ Tooltip.props.content.type = [String, Object]
 
 export interface TableProps<RowType = KVA> {
   columns: (Partial<ElTableColumn> & KVA & {
-    // Form 元素
-    // 与元素签名一致
-    input?: Partial<ElInput> & { rules?: ElFormItem['rules'] }
-    select?: Partial<ElSelect> & {
-      options:
-      | (OptionRecord & Partial<ElOption>)[]
-      | ((...args: Parameters<TableColumn<RowType>['render']>) => (OptionRecord & Partial<ElOption>)[])
-      rules?: ElFormItem['rules']
+    formItem?: Partial<ElFormItem> & {
+      input?: Partial<ElInput>
+      select?: Partial<ElSelect> & {
+        options:
+        | (OptionRecord & Partial<ElOption>)[]
+        | ((...args: Parameters<TableColumn<RowType>['render']>) => (OptionRecord & Partial<ElOption>)[])
+      }
+      // TODO: 其他 Form 元素
     }
-    // TODO: datePicker?: Partial<ElDatePicker>
 
     tooltip?: Partial<ElTooltip & {
       /** 自定义渲染 content 支持 JSX.Element */
@@ -272,8 +271,7 @@ function renderColumn(column: TableColumn, index: number) {
   const h = this.$createElement
   const {
     prop,
-    input,
-    select,
+    formItem,
     tooltip,
     render,
   } = column
@@ -283,33 +281,38 @@ function renderColumn(column: TableColumn, index: number) {
 
   if (typeof render === 'function') {
     node = render
-  } else if (typeof input === 'object') {
-    const { placeholder = '请输入', rules, ...inputOmit } = input
-    node = ({ row, $index }) => (
-      // @ts-ignore
-      <FormItem prop={formTableProp($index, prop)} rules={rules}>
-        {/*  @ts-ignore */}
-        <Input v-model={row[prop]} placeholder={placeholder} {...{ props: inputOmit }} />
-      </FormItem>
-    )
-  } else if (typeof select === 'object') {
-    const { options: opts, placeholder = '请选择', rules, ...selectOmit } = select
-    node = args => {
-      const { row, $index } = args
-      const options = typeof opts === 'function' ? opts(args) : opts
-      return (
+  } else if (typeof formItem === 'object') {
+    const {
+      input,
+      select,
+      ...restFormItem
+    } = formItem
+
+    if (typeof input === 'object') {
+      const { placeholder = '请输入', ...restInput } = input
+      node = ({ row, $index }) => (
         // @ts-ignore
-        <FormItem prop={formTableProp($index, prop)} rules={rules}>
-          {/* @ts-ignore */}
-          <Select v-model={row[prop]} placeholder={placeholder} {...{ props: selectOmit }}>
-            {options.map((opt, idx) => {
-              const { value, label, ...optOmit } = opt
-              // @ts-ignore
-              return <Option key={idx} value={value} {...{ props: optOmit }}>{label}</Option>
-            })}
-          </Select>
+        <FormItem prop={formTableProp($index, prop)} {...{ props: restFormItem }}>
+          {/*  @ts-ignore */}
+          <Input clearable v-model={row[prop]} placeholder={placeholder} {...{ props: restInput }} />
         </FormItem>
       )
+    } else if (typeof select === 'object') {
+      const { options: opts, placeholder = '请选择', ...restSelect } = select
+      node = args => {
+        const { row, $index } = args
+        const options = typeof opts === 'function' ? opts(args) : opts
+        return (
+          // @ts-ignore
+          <FormItem prop={formTableProp($index, prop)} {...{ props: restFormItem }}>
+            {/* @ts-ignore */}
+            <Select clearable v-model={row[prop]} placeholder={placeholder} {...{ props: restSelect }}>
+              {/* @ts-ignore */}
+              {options.map((opt, idx) => <Option key={idx} {...{ props: opt }} />)}
+            </Select>
+          </FormItem>
+        )
+      }
     }
   }
 
@@ -362,7 +365,7 @@ function withTooltip(
   // 编译后的 jsx 需要使用 h 函数
   const h = this.$createElement
   const style = 'overflow:hidden; text-overflow:ellipsis; white-space:nowrap;'
-  const { placement = 'top', ...omit } = tooltip
+  const { placement = 'top', ...rest } = tooltip
 
   return (obj: Parameters<TableColumn['render']>[0]) => {
     let n = ensureNodeValueVNode.call(this, render(obj))
@@ -370,7 +373,7 @@ function withTooltip(
     n = <Tooltip
       placement={placement}
       content={tooltip.render ? tooltip.render(obj) : obj.row[column.prop]}
-      {...{ props: omit }}
+      {...{ props: rest }}
     >
       <div style={style}>{n}</div>
     </Tooltip>
