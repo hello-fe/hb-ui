@@ -172,6 +172,7 @@ function editComponents<RecordType = KVA, FormValues = KVA>(
   return {
     body: {
       row: props => {
+        // TODO: 考虑支持外部传入 FormInstance 达到完全可控
         const [form] = Form.useForm()
         return (
           <Form form={form} component={false}>
@@ -198,6 +199,7 @@ function editComponents<RecordType = KVA, FormValues = KVA>(
           const key = dataIndex as string
 
           // 初始化数据同步到 Form 中 - 回填数据
+          // 在 Antd 提供的 Demo 中点击可编辑 cell 时触发 form.setFieldsValue 规避频繁触发
           form.setFieldsValue({ [key]: record[key] } as any)
 
           if (formItem) {
