@@ -43,20 +43,45 @@ npm run build
 
 ## 组件
 
-推荐将项目 clone 到本地，然后执行 `npm run dev` 看实际效果
+- 🤖 推荐将项目 clone 到本地，然后执行 `npm run dev` 看实际效果
+- 📚 [使用案例](https://github.com/hello-fe/hb-ui/tree/main/packages/antd/view)
 
-#### Form
+#### `Form`
 
 - 基于 antd/form
 - 配置化
+- 搜索缓存
 
-[使用案例](https://github.com/hello-fe/hb-ui/tree/main/packages/antd/view/form)
+```ts
+// 你可以根据 TS 类型提示使用
+import { Form, FormProps } from '@hb-ui/antd'
 
-#### Table
+export default () => {
+  const formProps: FormProps = {
+    // Form config
+  }
 
-- antd/table
+  return <Form {...formProps} />
+}
+```
+
+#### `Table`
+
+- 基于 antd/table
 - 配置化
+- 可编辑
 - 接管请求
 - 接管分页
 
-[使用案例](https://github.com/hello-fe/hb-ui/tree/main/packages/antd/view/table)
+```ts
+// 你可以根据 TS 类型提示使用
+import { Table, TableProps } from '@hb-ui/antd'
+
+export default () => {
+  const tableProps: TableProps = {
+    // Table config
+  }
+
+  return <Table {...tableProps} />
+}
+```

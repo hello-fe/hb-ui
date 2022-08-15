@@ -1,4 +1,4 @@
-import { Component } from 'vue'
+import type { Component } from 'vue'
 import {
   Form,
   FormItem,
@@ -10,16 +10,16 @@ import {
   TableColumn as ElementTableColumn,
   Tooltip as ElementTooltip,
 } from 'element-ui'
-import { ElForm } from 'element-ui/types/form'
-import { ElFormItem } from 'element-ui/types/form-item'
-import { ElInput } from 'element-ui/types/input'
-import { ElOption } from 'element-ui/types/option'
-import { ElSelect } from 'element-ui/types/select'
-import { ElTable } from 'element-ui/types/table'
-import { ElTooltip } from 'element-ui/types/tooltip'
-import { ElTableColumn } from 'element-ui/types/table-column'
-import { ElPagination } from 'element-ui/types/pagination'
-import {
+import type { ElForm } from 'element-ui/types/form'
+import type { ElFormItem } from 'element-ui/types/form-item'
+import type { ElInput } from 'element-ui/types/input'
+import type { ElOption } from 'element-ui/types/option'
+import type { ElSelect } from 'element-ui/types/select'
+import type { ElTable } from 'element-ui/types/table'
+import type { ElTooltip } from 'element-ui/types/tooltip'
+import type { ElTableColumn } from 'element-ui/types/table-column'
+import type { ElPagination } from 'element-ui/types/pagination'
+import type {
   KVA,
   OptionRecord,
   JSX_ELEMENT,

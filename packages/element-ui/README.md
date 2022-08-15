@@ -1,4 +1,4 @@
-# element-ui
+# @hb-ui/element-ui
 
 基于 Element UI 二次封装的一些常用组件
 
@@ -43,20 +43,58 @@ npm run build
 
 ## 组件
 
-推荐将项目 clone 到本地，然后执行 `npm run dev` 看实际效果
+- 🤖 推荐将项目 clone 到本地，然后执行 `npm run dev` 看实际效果
+- 📚 [使用案例](https://github.com/hello-fe/hb-ui/tree/main/packages/element-ui/view)
+- 🚨 推荐使用 `tsx` or `jsx`
 
 #### Form
 
 - 基于 element-ui/form
 - 配置化
+- 搜索缓存
 
-[使用案例](https://github.com/hello-fe/hb-ui/tree/main/packages/element-ui/view/form)
+```ts
+// 你可以根据 TS 类型提示使用
+import { Form, FormProps } from '@hb-ui/element-ui'
+
+export default {
+  render() {
+    /**
+     * 如果你用的是 .jsx
+     * @type {import('@hb-ui/element-ui').FormProps}
+     */
+    const formProps: FormProps = {
+      // Form config
+    }
+  
+    return <Form {...{ props: formProps }} />
+  },
+}
+```
 
 #### Table
 
-- element-ui/table
+- 基于 element-ui/table
 - 配置化
+- 可编辑
 - 接管请求
 - 接管分页
 
-[使用案例](https://github.com/hello-fe/hb-ui/tree/main/packages/element-ui/view/table)
+```ts
+// 你可以根据 TS 类型提示使用
+import { Table, TableProps } from '@hb-ui/element-ui'
+
+export default {
+  render() {
+    /**
+     * 如果你用的是 .jsx
+     * @type {import('@hb-ui/element-ui').TableProps}
+     */
+    const tableProps: TableProps = {
+      // Table config
+    }
+  
+    return <Table {...{ props: tableProps }} />
+  },
+}
+```
