@@ -7,13 +7,13 @@ import {
   Button,
   DatePicker,
 } from 'element-ui'
-import { ElDatePicker } from 'element-ui/types/date-picker'
-import { ElForm } from 'element-ui/types/form'
-import { ElFormItem } from 'element-ui/types/form-item'
-import { ElInput } from 'element-ui/types/input'
-import { ElSelect } from 'element-ui/types/select'
-import { Component, VNodeData } from 'vue'
-import { OptionRecord, JSX_ELEMENT } from '../../types/common'
+import type { ElDatePicker } from 'element-ui/types/date-picker'
+import type { ElForm } from 'element-ui/types/form'
+import type { ElFormItem } from 'element-ui/types/form-item'
+import type { ElInput } from 'element-ui/types/input'
+import type { ElSelect } from 'element-ui/types/select'
+import type { Component, VNodeData } from 'vue'
+import type { OptionRecord, JSX_ELEMENT } from '../../types/common'
 
 export type HBInput = Partial<ElInput> & VNodeData
 export type HBSelect = Partial<ElSelect> &
