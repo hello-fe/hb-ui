@@ -1,6 +1,6 @@
 {
   "name": "@hb-ui/antd",
-  "version": "1.0.0",
+  "version": "4.1.0",
   "packageManager": "pnpm@7.0.0",
   "description": "基于 antd 二次封装的一些常用组件",
   "main": "es/index.js",
@@ -14,14 +14,8 @@
     "dev": "vite",
     "prepublishOnly": "npm run build"
   },
-  "dependencies": {
-    "@ant-design/icons": "~4.7.0",
-    "antd": "~4.22.4",
-    "react": "16.14.0",
-    "react-dom": "16.14.0",
-    "react-router-dom": "~6.3.0"
-  },
   "devDependencies": {
+    "@ant-design/icons": "~4.7.0",
     "@babel/core": "~7.18.9",
     "@babel/plugin-transform-typescript": "~7.18.8",
     "@babel/preset-react": "~7.18.6",
@@ -29,7 +23,11 @@
     "@types/react-dom": "18.0.6",
     "@vitejs/plugin-react": "~2.0.0",
     "@vue/babel-preset-app": "~5.0.8",
+    "antd": "~4.22.4",
     "chalk": "~5.0.1",
+    "react": "16.14.0",
+    "react-dom": "16.14.0",
+    "react-router-dom": "~6.3.0",
     "typescript": "~4.7.4",
     "vite": "~3.0.6"
   },
