@@ -3,7 +3,7 @@ import { Component } from 'vue'
 
 const FormTsx: Component = {
   data() {
-    const formModel = {area:'1',age:'10'}
+    const formModel = { area: '1', age: '10' }
     const formHandle = {}
     return {
       formModel,
@@ -11,14 +11,14 @@ const FormTsx: Component = {
     }
   },
   methods: {
-    async onSubmit(){
+    async onSubmit() {
       try { await this.formHandle.validate(); } catch (error) { return; }
       console.log(this.formModel)
     }
   },
   render() {
     const formProps: FormProps = {
-      cache: true,
+      cache: { filterKey: 'filterData' },
       onSubmit: this.onSubmit,
       handle: this.formHandle,
       elements: [
@@ -32,7 +32,7 @@ const FormTsx: Component = {
             ],
             on: {
               change: (e) => { console.log('change', e) },
-              input: (e) => {console.log('input', e)},
+              input: (e) => { console.log('input', e) },
             },
             // onChange: (e)=>{console.log(22, e)},
             // onInput: (e)=>{console.log(33, e)},
@@ -41,25 +41,30 @@ const FormTsx: Component = {
           rules: { required: true, message: '请选择地区' },
         },
         {
-          label: '凭证类别',
-          prop: 'voucherCategory',
-          rules: { required: true, message: '请输入凭证类别' },
+          label: '姓名',
+          prop: 'name',
+          rules: { required: true, message: '请输入姓名' },
+          // $scopedSlots: {
+          //   label: () => <span><i class='el-icon-s-flag' />年龄</span>
+          // }
         },
         {
           label: '年龄',
           prop: 'age',
           input: {
-            on: {
-              // change: (e)=>console.log('change',e),
-              // input: (e)=>console.log('input',e),
-              // focus: (e)=>console.log('focus',e),
-            },
-            maxlength: 2,
-            // onChange: (e)=>{console.log(222,e)},
-            clearable: false,
+            // on: {
+            //   change: (e) => console.log('change', e),
+            //   input: (e) => console.log('input', e),
+            //   focus: (e) => console.log('focus', e),
+            // },
+            // maxlength: 2,
+            onChange: (e) => { console.log(222, e) },
+            // clearable: true,
+            // prefixIcon: "el-icon-search",
+            // suffixIcon: "el-icon-search",
           },
-          $scopedSlots: {
-            label: () => <div>11</div>
+          scopedSlots2: {
+            label: () => <span><i class='el-icon-s-flag' /></span>
           }
         },
         // {
@@ -75,6 +80,7 @@ const FormTsx: Component = {
         //   }
         // }
       ],
+      model: this.formModel,
       props: {
         model: this.formModel,
         labelWidth: '87px',
