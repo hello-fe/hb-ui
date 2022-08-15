@@ -29,7 +29,6 @@ import type { KVA } from '../../types/common'
 /**
  * TODO:
  * 1. 缓存功能
- * 2. 排版样式
  */
 
 export interface FormProps<Values = KVA> extends AntdFormProps<Values> {
