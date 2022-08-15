@@ -80,7 +80,6 @@ const FormTsx: Component = {
         //   }
         // }
       ],
-      model: this.formModel,
       props: {
         model: this.formModel,
         labelWidth: '87px',
@@ -89,9 +88,7 @@ const FormTsx: Component = {
     }
 
     return (
-      <div>
-        <Form {...{ props: formProps }} />
-      </div>
+      <Form {...{ props: formProps }} />
     )
   },
 }
