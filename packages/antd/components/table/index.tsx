@@ -166,7 +166,7 @@ function editComponents<RecordType = KVA, FormValues = KVA>(
     onFieldChange?: (args: { key: string; value: any; index: number }) => void,
   } = {},
 ): AntdTableProps<RecordType>['components'] {
-  // EditableRow 会为每一行单独创建一个 FormInstance
+  // 每行独立一个 FormInstance
   const EditableContext = React.createContext({} as FormInstance)
 
   return {
@@ -193,12 +193,11 @@ function editComponents<RecordType = KVA, FormValues = KVA>(
 
         // title 列无 record
         if (record) {
-          // TODO: form.validateFields
           const form = useContext<FormInstance<FormValues>>(EditableContext)
           const { dataIndex, formItem } = (column || {}) as TableColumn<RecordType>
           const key = dataIndex as string
 
-          // 初始化数据同步到 Form 中
+          // 初始化数据同步到 Form 中 - 回填数据
           form.setFieldsValue({ [key]: record[key] } as any)
 
           if (formItem) {
@@ -214,30 +213,38 @@ function editComponents<RecordType = KVA, FormValues = KVA>(
               record[backupKey] = record[key]
             }
 
-            // TODO: 回填数据
             if (input) {
+              const { onInput, onBlur, ...restInput } = input
               childNode = (
                 <Form.Item name={key} {...formItem}>
                   <Input
                     allowClear
                     placeholder='请输入'
-                    onInput={({ target }) => record[key] /* 软更新 🚧-② */ = (target as any).value}
-                    onBlur={({ target }) => args.onFieldChange?.({ key, value: target.value, index })} // 硬更新
-                    {...input}
+                    onInput={event => {
+                      onInput?.(event)
+                      record[key] /* 软更新 🚧-② */ = (event.target as any).value
+                    }}
+                    onBlur={event => {
+                      onBlur?.(event)
+                      args.onFieldChange?.({ key, value: event.target.value, index })
+                    }} // 硬更新
+                    {...restInput}
                   />
                 </Form.Item>
               )
             } else if (select) {
+              const { onChange, ...restSelect } = select
               childNode = (
                 <Form.Item name={key} {...formItem}>
                   <Select
                     allowClear
                     placeholder='请选择'
-                    onChange={value => {
+                    onChange={(value, option) => {
+                      onChange?.(value, option)
                       record[key] /* 软更新 🚧-② */ = value
                       args.onFieldChange?.({ key, value, index }) // 硬更新
                     }}
-                    {...select}
+                    {...restSelect}
                   />
                 </Form.Item>
               )
