@@ -34,7 +34,7 @@ export interface FormProps<Values = Record<string, any>> extends AntdFormProps<V
   items: (
     | (AntdFormItemProps & {
       input?: InputProps
-      select?: SelectProps // TODO: ValueType
+      select?: SelectProps
       datePicker?: DatePickerProps
       rangePicker?: RangePickerProps
       checkboxGroup?: CheckboxGroupProps
@@ -58,7 +58,7 @@ export interface FormProps<Values = Record<string, any>> extends AntdFormProps<V
 
 export type FormItemProps<Values = Record<string, any>> = FormProps<Values>['items'][number]
 
-function FormAntd(props: FormProps) {
+function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
   const {
     items,
     lastItem,
@@ -66,11 +66,11 @@ function FormAntd(props: FormProps) {
     onReset,
     // 🤔 如果外部需要 FormInstance 可以从外部传递进来
     // 默认值使用不当可能会掉进 hooks 陷阱！
-    form = Form.useForm()[0],
-    className = '',
+    form = Form.useForm<Values>()[0],
+    className,
     row,
-    col = { span: 24 / 3 },
-    ...omitFormProps
+    col = { span: 24 / 3 }, // TODO
+    ...restFormProps
   } = props
 
   const clickSubmit = async () => {
@@ -84,12 +84,12 @@ function FormAntd(props: FormProps) {
 
   return (
     <Form
-      className={'hb-ui-form ' + className}
+      className={['hb-ui-form', className].filter(Boolean).join(' ')}
       form={form}
       colon={false}
       labelCol={{ span: 7 }}
       wrapperCol={{ span: 17 }}
-      {...omitFormProps}
+      {...restFormProps}
     >
       <Row {...row}>
         {items.map((item, index, arr) => typeof item === 'function'
@@ -129,7 +129,7 @@ function renderFormItem<Values = Record<string, any>>(
     checkboxGroup,
     radioGroup,
     switch: switch2,
-    ...omitItemProps
+    ...restItemProps
   } = item
 
   let node: JSX.Element
@@ -169,8 +169,8 @@ function renderFormItem<Values = Record<string, any>>(
 
   return (
     <Form.Item
-      key={String(item.name || index)}
-      {...omitItemProps}
+      key={index}
+      {...restItemProps}
     >
       {node}
     </Form.Item>
