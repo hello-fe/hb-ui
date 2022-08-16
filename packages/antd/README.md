@@ -44,7 +44,7 @@ npm run build
 ## 组件
 
 - 🤖 推荐将项目 clone 到本地，然后执行 `npm run dev` 看实际效果
-- 📚 [使用案例](https://github.com/hello-fe/hb-ui/tree/main/packages/antd/view)
+- 🐢 [在线运行 - StackBlitz](https://stackblitz.com/edit/hb-ui-antd)
 
 #### `Form`
 
