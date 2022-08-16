@@ -1,3 +1,4 @@
+import { Input } from 'antd'
 import React, { useState } from 'react'
 import {
   Form,
@@ -17,6 +18,7 @@ export default () => {
         label: '姓名',
         name: 'name',
         rules: [{ required: true, message: '请输入姓名！' }],
+        render: () => <Input placeholder='请输入姓名' />
       },
       {
         label: '岗位',

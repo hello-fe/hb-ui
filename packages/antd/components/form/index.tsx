@@ -42,7 +42,8 @@ export interface FormProps<Values = Record<string, any>> extends AntdFormProps<V
       switch?: SwitchProps
       col?: ColProps
 
-      // TODO: render props(小)
+      // render props(小)
+      render?: () => JSX.Element
     })
     // render function(大)
     | (() => JSX.Element)
@@ -129,6 +130,7 @@ function renderFormItem<Values = Record<string, any>>(
     checkboxGroup,
     radioGroup,
     switch: switch2,
+    render,
     ...restItemProps
   } = item
 
@@ -136,8 +138,10 @@ function renderFormItem<Values = Record<string, any>>(
   const defaultNode = (
     <Input placeholder={`请输入${item.label || ''}`} {...input} />
   )
-
-  if (input) {
+  
+  if (render) {
+    node = render()
+  } else if (input) {
     node = defaultNode
   } else if (select) {
     node = (
