@@ -24,14 +24,13 @@ import type { RadioGroupProps } from 'antd/es/radio'
 import type { SwitchProps } from 'antd/es/switch'
 import type { RowProps } from 'antd/es/row'
 import type { ColProps } from 'antd/es/col'
-import type { KVA } from '../../types/common'
 
 /**
  * TODO:
  * 1. 缓存功能
  */
 
-export interface FormProps<Values = KVA> extends AntdFormProps<Values> {
+export interface FormProps<Values = Record<string, any>> extends AntdFormProps<Values> {
   items: (
     | (AntdFormItemProps & {
       input?: InputProps
@@ -57,7 +56,7 @@ export interface FormProps<Values = KVA> extends AntdFormProps<Values> {
   col?: ColProps
 }
 
-export type FormItemProps<Values = KVA> = FormProps<Values>['items'][number]
+export type FormItemProps<Values = Record<string, any>> = FormProps<Values>['items'][number]
 
 function FormAntd(props: FormProps) {
   const {
@@ -114,7 +113,7 @@ function FormAntd(props: FormProps) {
   )
 }
 
-function renderFormItem<Values = KVA>(
+function renderFormItem<Values = Record<string, any>>(
   item: FormItemProps<Values>,
   index: number,
   items: FormItemProps<Values>[],

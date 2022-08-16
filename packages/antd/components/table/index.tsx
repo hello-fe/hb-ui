@@ -19,13 +19,10 @@ import type {
   TablePaginationConfig,
   TableProps as AntdTableProps,
 } from 'antd/es/table'
-import type {
-  KVA,
-} from '../../types/common'
 
 // 🚧-①: 屏蔽 React.StrictMode 副作用
 
-export interface TableProps<RecordType = KVA> extends Omit<AntdTableProps<RecordType>, 'columns'> {
+export interface TableProps<RecordType = Record<string, any>> extends Omit<AntdTableProps<RecordType>, 'columns'> {
   columns?: (AntdColumnType<RecordType> & {
     formItem?: FormItemProps & {
       input?: InputProps
@@ -49,11 +46,11 @@ export interface TableProps<RecordType = KVA> extends Omit<AntdTableProps<Record
   }
 }
 
-export type TableColumn<RecordType = KVA> = TableProps<RecordType>['columns'][number]
-export type TableQuery<RecordType = KVA> = TableProps<RecordType>['query']
-export type TableHandle<RecordType = KVA> = TableProps<RecordType>['handle']
+export type TableColumn<RecordType = Record<string, any>> = TableProps<RecordType>['columns'][number]
+export type TableQuery<RecordType = Record<string, any>> = TableProps<RecordType>['query']
+export type TableHandle<RecordType = Record<string, any>> = TableProps<RecordType>['handle']
 
-function TableAntd<RecordType = KVA, FormValues = KVA>(props: TableProps<RecordType>) {
+function TableAntd<RecordType = Record<string, any>, FormValues = Record<string, any>>(props: TableProps<RecordType>) {
   const {
     columns,
     dataSource,
@@ -161,7 +158,7 @@ export default TableAntd
  * 可编辑表格实现
  * @see https://ant.design/components/table/#components-table-demo-edit-cell
  */
-function editComponents<RecordType = KVA, FormValues = KVA>(
+function editComponents<RecordType = Record<string, any>, FormValues = Record<string, any>>(
   args: {
     onFieldChange?: (args: { key: string; value: any; index: number }) => void,
   } = {},
@@ -259,7 +256,7 @@ function editComponents<RecordType = KVA, FormValues = KVA>(
     },
   }
 }
-editComponents.withOnCell = function onCell<RecordType = KVA>(columns: TableColumn<RecordType>[]): typeof columns {
+editComponents.withOnCell = function onCell<RecordType = Record<string, any>>(columns: TableColumn<RecordType>[]): typeof columns {
   return columns.map(column => ({
     ...column,
     // 透传至 components.body.cell

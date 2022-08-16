@@ -13,11 +13,7 @@ import { ElTable } from 'element-ui/types/table'
 import { ElTooltip } from 'element-ui/types/tooltip'
 import { ElTableColumn } from 'element-ui/types/table-column'
 import { ElPagination } from 'element-ui/types/pagination'
-import {
-  KVA,
-  OptionRecord,
-  JSX_ELEMENT,
-} from '../../types/common'
+import { OptionRecord, JSX_ELEMENT, } from '../types'
 
 /**
  * props.data、props.pagination 设计为单向数据流
@@ -28,8 +24,8 @@ const Tooltip = { ...ElementTooltip }
 // @ts-ignore
 Tooltip.props.content.type = [String, Object]
 
-export interface TableProps<RowType = KVA> {
-  columns: (Partial<ElTableColumn> & KVA & {
+export interface TableProps<RowType = Record<string, any>> {
+  columns: (Partial<ElTableColumn> & Record<string, any> & {
     // Form 元素
     // 与元素签名一致
     input?: Partial<ElInput> & { rules?: ElFormItem['rules'] }
@@ -71,20 +67,20 @@ export interface TableProps<RowType = KVA> {
     /** Total item count */
     total: number
     /** 泛化 */
-    props?: Partial<ElPagination & KVA>
+    props?: Partial<ElPagination & Record<string, any>>
   }
   handle?: {
     query: (args?: Omit<Parameters<TableQuery<RowType>>[0], 'count'>) => void
   }
   /** 泛化 */
-  props?: Partial<ElTable & KVA>
+  props?: Partial<ElTable & Record<string, any>>
 }
 
-export type TableColumn<RowType = KVA> = TableProps<RowType>['columns'][number]
-export type TableData<RowType = KVA> = TableProps<RowType>['data'][number]
-export type TableQuery<RowType = KVA> = TableProps<RowType>['query']
+export type TableColumn<RowType = Record<string, any>> = TableProps<RowType>['columns'][number]
+export type TableData<RowType = Record<string, any>> = TableProps<RowType>['data'][number]
+export type TableQuery<RowType = Record<string, any>> = TableProps<RowType>['query']
 export type TablePagination = Pick<TableProps['pagination'], 'currentPage' | 'pageSize' | 'total'>
-export type TableHandle<RowType = KVA> = TableProps<RowType>['handle']
+export type TableHandle<RowType = Record<string, any>> = TableProps<RowType>['handle']
 
 // 这里与 export default 类型并不匹配，Vue2 提供的 ts 并不完整
 const TableElementUI: Component<
@@ -98,7 +94,7 @@ const TableElementUI: Component<
     onSizeChange: (size: number) => void,
     queryHandle: () => void,
   },
-  KVA,
+  Record<string, any>,
   TableProps
 > = {
   name: 'hb-ui-table',
