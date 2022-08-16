@@ -9,15 +9,15 @@ import {
   Row,
   Col,
 } from 'element-ui'
-import { ElCol } from 'element-ui/types/col'
-import { ElRow } from 'element-ui/types/row'
-import { ElDatePicker } from 'element-ui/types/date-picker'
-import { ElForm } from 'element-ui/types/form'
-import { ElFormItem } from 'element-ui/types/form-item'
-import { ElInput } from 'element-ui/types/input'
-import { ElSelect } from 'element-ui/types/select'
-import { Component, VNodeData } from 'vue'
-import { OptionRecord, JSX_ELEMENT } from '../../types/common'
+import type { ElCol } from 'element-ui/types/col'
+import type { ElRow } from 'element-ui/types/row'
+import type { ElDatePicker } from 'element-ui/types/date-picker'
+import type { ElForm } from 'element-ui/types/form'
+import type { ElFormItem } from 'element-ui/types/form-item'
+import type { ElInput } from 'element-ui/types/input'
+import type { ElSelect } from 'element-ui/types/select'
+import type { Component, VNodeData } from 'vue'
+import type { KVA, OptionRecord, JSX_ELEMENT } from '../../types/common'
 
 export type HBInput = Partial<ElInput> & VNodeData
 export type HBSelect = Partial<ElSelect> &
@@ -59,7 +59,20 @@ function mergeEvents<T extends { on?: KVA }>({ on, ...rest }: T) {
   }
 }
 
-const FormElementUI: Component = {
+const FormElementUI: Component<
+  () => {
+    originFormModel: KVA,
+    filterKey: string,
+  },
+  {
+    getParams: () => KVA,
+    cachesParams: () => void,
+    onFormSubmit: () => void,
+    onFormReset: () => void,
+  },
+  KVA,
+  FormProps
+> = {
   name: 'hb-ui-form',
   data() {
     const { props, cache } = this.$props;
@@ -71,20 +84,25 @@ const FormElementUI: Component = {
   },
   props: {
     props: {
+      // @ts-ignore
       type: Object as { (): ElForm },
       default: () => ({}),
     },
     elements: {
+      // @ts-ignore
       type: Array,
       default: () => [],
     },
+    // @ts-ignore
     onSubmit: Function,
     onReset: Function,
     handle: {
+      // @ts-ignore
       type: Object as { (): FormProps['handle'] },
       default: () => ({}),
     },
     cache: {
+      // @ts-ignore
       type: [Object as { (): CacheType }, Boolean],
       default: false,
     },
@@ -216,6 +234,7 @@ const FormElementUI: Component = {
     }
 
     return (
+      // @ts-ignore
       <Form ref='hb-ui-form' {...{ props: { inline: true, ...props } }}>
         <Row {...{ props: row }}>
           {elements.map((element) => typeof element === 'function' ? element() : (
@@ -230,7 +249,9 @@ const FormElementUI: Component = {
         </Row>
         {footer ?? (
           <span>
+            {/* @ts-ignore */}
             <Button type='primary' onClick={this.onFormSubmit}>查询</Button>
+            {/* @ts-ignore */}
             <Button onClick={this.onFormReset}>重置</Button>
           </span>
         )}
