@@ -60,6 +60,25 @@ export interface FormProps<Values = Record<string, any>> extends AntdFormProps<V
 export type FormItemProps<Values = Record<string, any>> = FormProps<Values>['items'][number]
 
 function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
+
+  const colDefault: ColProps = {
+    sm: {
+      span: 24
+    },
+    md: {
+      span: 12
+    },
+    lg: {
+      span: 8
+    },
+    xl: {
+      span: 6
+    },
+    xxl: {
+      span: 3
+    }
+  }
+
   const {
     items,
     lastItem,
@@ -70,7 +89,7 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     form = Form.useForm<Values>()[0],
     className,
     row,
-    col = { span: 24 / 3 }, // TODO
+    col = colDefault, // TODO
     ...restFormProps
   } = props
 
