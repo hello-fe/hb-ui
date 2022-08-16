@@ -17,7 +17,7 @@ import type { ElFormItem } from 'element-ui/types/form-item'
 import type { ElInput } from 'element-ui/types/input'
 import type { ElSelect } from 'element-ui/types/select'
 import type { Component, VNodeData } from 'vue'
-import type { KVA, OptionRecord, JSX_ELEMENT } from '../../types/common'
+import type { OptionRecord, JSX_ELEMENT } from '../types'
 
 export type HBInput = Partial<ElInput> & VNodeData
 export type HBSelect = Partial<ElSelect> &
@@ -44,7 +44,7 @@ export interface FormProps {
   col?: ElCol,
 }
 
-function mergeEvents<T extends { on?: KVA }>({ on, ...rest }: T) {
+function mergeEvents<T extends { on?: Record<string, any> }>({ on, ...rest }: T) {
   return {
     ...rest,
     on: {
@@ -61,16 +61,16 @@ function mergeEvents<T extends { on?: KVA }>({ on, ...rest }: T) {
 
 const FormElementUI: Component<
   () => {
-    originFormModel: KVA,
+    originFormModel: Record<string, any>,
     filterKey: string,
   },
   {
-    getParams: () => KVA,
+    getParams: () => Record<string, any>,
     cachesParams: () => void,
     onFormSubmit: () => void,
     onFormReset: () => void,
   },
-  KVA,
+  Record<string, any>,
   FormProps
 > = {
   name: 'hb-ui-form',

@@ -5,15 +5,15 @@ import {
   TableColumn as ElementTableColumn,
   Tooltip as ElementTooltip,
 } from 'element-ui'
-import { ElFormItem } from 'element-ui/types/form-item'
-import { ElInput } from 'element-ui/types/input'
-import { ElOption } from 'element-ui/types/option'
-import { ElSelect } from 'element-ui/types/select'
-import { ElTable } from 'element-ui/types/table'
-import { ElTooltip } from 'element-ui/types/tooltip'
-import { ElTableColumn } from 'element-ui/types/table-column'
-import { ElPagination } from 'element-ui/types/pagination'
-import { OptionRecord, JSX_ELEMENT, } from '../types'
+import type { ElFormItem } from 'element-ui/types/form-item'
+import type { ElInput } from 'element-ui/types/input'
+import type { ElOption } from 'element-ui/types/option'
+import type { ElSelect } from 'element-ui/types/select'
+import type { ElTable } from 'element-ui/types/table'
+import type { ElTooltip } from 'element-ui/types/tooltip'
+import type { ElTableColumn } from 'element-ui/types/table-column'
+import type { ElPagination } from 'element-ui/types/pagination'
+import type { OptionRecord, JSX_ELEMENT, } from '../types'
 
 /**
  * props.data、props.pagination 设计为单向数据流
