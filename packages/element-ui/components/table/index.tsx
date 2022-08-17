@@ -176,7 +176,7 @@ const TableElementUI: Component<
 
       if (!props.query) return
       this.queryCount++
-      const pagination = args.pagination ?? (typeof page2 === 'object' ? {
+      const pagination = args.pagination ?? (page2 ? {
         currentPage: page2.currentPage,
         pageSize: page2.pageSize,
         total: page2.total,
@@ -191,7 +191,7 @@ const TableElementUI: Component<
 
       const { data, ...pagination2 } = result
       this.formModel.tableData = data
-      if (typeof this.pagination2 === 'object') {
+      if (page2) {
         this.pagination2 = pagination2
       }
     },
