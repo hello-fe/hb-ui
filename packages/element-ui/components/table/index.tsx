@@ -130,6 +130,7 @@ const TableElementUI: Component<
     pagination: [Object, null],
     // @ts-ignore
     handle: Object,
+    props: Object,
   },
   mounted() {
     const props = this.$props as TableProps
@@ -182,11 +183,14 @@ const TableElementUI: Component<
         total: page2.total,
       } : undefined)
 
+      this.loading = true
       const result = await props.query({
         count: this.queryCount,
         pagination,
         payload: args.payload,
       })
+      this.loading = false
+
       if (!result) return // 打断请求 or 无效请求
 
       const { data, ...pagination2 } = result
