@@ -29,7 +29,7 @@ export interface ElFormItem extends Partial<ElFormItem2> {
   input?: HBInput
   select?: HBSelect
   datePicker?: HBDatePicker
-  render?: () => JSX_ELEMENT
+  render?: (value: any) => JSX_ELEMENT
   col?: ElCol
 }
 export interface FormProps {
@@ -229,7 +229,7 @@ const FormItemUI: Component<
       }
 
       if (typeof render === 'function') {
-        return render
+        return render(props.model[prop])
       } else if (select) {
         return ComponentsMap['select'](mergeEvents<HBSelect>(select))
       } else if (datePicker) {
