@@ -43,7 +43,7 @@ export interface FormProps<Values = Record<PropertyKey, any>> extends AntdFormPr
       col?: ColProps
 
       // render props(小)
-      render?: () => JSX.Element
+      render?: (value: any) => JSX.Element
     })
     // render function(大)
     | (() => JSX.Element)
@@ -112,9 +112,9 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
       {...restFormProps}
     >
       <Row {...row}>
-        {items.map((item, index, arr) => typeof item === 'function'
+        {items.map((item, index) => typeof item === 'function'
           ? item()
-          : <Col {...(item.col || col)} key={index}>{renderFormItem(item, index, arr)}</Col>
+          : <Col {...(item.col || col)} key={index}>{renderFormItem(form, item, index)}</Col>
         )}
         {typeof lastItem === 'function' ? lastItem(form) : (
           <Col {...(lastItem?.col || col)}>
@@ -134,9 +134,9 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
 }
 
 function renderFormItem<Values = Record<PropertyKey, any>>(
+  form: FormInstance<Values>,
   item: FormItemProps<Values>,
-  index: number,
-  items: FormItemProps<Values>[],
+  key: React.Key,
 ): JSX.Element {
   // never used, for ts check
   if (typeof item === 'function') return item()
@@ -157,9 +157,9 @@ function renderFormItem<Values = Record<PropertyKey, any>>(
   const defaultNode = (
     <Input placeholder={`请输入${item.label || ''}`} {...input} />
   )
-  
+
   if (render) {
-    node = render()
+    node = render(form.getFieldValue(item.name))
   } else if (input) {
     node = defaultNode
   } else if (select) {
@@ -192,7 +192,7 @@ function renderFormItem<Values = Record<PropertyKey, any>>(
 
   return (
     <Form.Item
-      key={index}
+      key={key}
       {...restItemProps}
     >
       {node}
