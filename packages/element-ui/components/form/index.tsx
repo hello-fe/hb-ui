@@ -36,7 +36,9 @@ export interface FormProps {
   props: Partial<ElForm>
   items: (ElFormItem | (() => JSX_ELEMENT))[]
   /** 预留给 [提交/重置] 的位置 */
-  lastItem?: false | ((nodes: import('vue').VNode[]) => JSX_ELEMENT)
+  lastItem?:
+  | (Partial<ElFormItem2> & { col?: ElCol /* TODO: render props(小) */ })
+  | ((nodes: import('vue').VNode[]) => JSX_ELEMENT) // render function(大)
   onSubmit?: () => Promise<void | boolean> | void | boolean
   onReset?: () => void
   handle?: ElForm
@@ -240,9 +242,6 @@ const FormItemUI: Component<
     }
 
     const renderLastItem = (lastItem: FormProps['lastItem']) => {
-      if (lastItem === false) {
-        return null
-      }
       const nodes = [
         // @ts-ignore
         <Button key="last-1" type='primary' onClick={this.onFormSubmit}>查询</Button>,
@@ -252,7 +251,11 @@ const FormItemUI: Component<
       if (typeof lastItem === 'function') {
         return lastItem(nodes)
       }
-      return <span>{nodes}</span>
+      return (
+        <Col {...{ props: lastItem?.col || col }}>
+          <FormItem {...{ props: lastItem }}>{nodes}</FormItem>
+        </Col>
+      )
     }
 
     return (
@@ -268,8 +271,8 @@ const FormItemUI: Component<
               </FormItem>
             </Col>
           ))}
+          {renderLastItem(lastItem)}
         </Row>
-        {renderLastItem(lastItem)}
       </Form>
     )
   },
