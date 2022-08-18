@@ -30,7 +30,7 @@ import type { ColProps } from 'antd/es/col'
  * 1. 缓存功能
  */
 
-export interface FormProps<Values = Record<string, any>> extends AntdFormProps<Values> {
+export interface FormProps<Values = Record<PropertyKey, any>> extends AntdFormProps<Values> {
   items: (
     | (AntdFormItemProps & {
       input?: InputProps
@@ -57,7 +57,7 @@ export interface FormProps<Values = Record<string, any>> extends AntdFormProps<V
   col?: ColProps
 }
 
-export type FormItemProps<Values = Record<string, any>> = FormProps<Values>['items'][number]
+export type FormItemProps<Values = Record<PropertyKey, any>> = FormProps<Values>['items'][number]
 
 function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
 
@@ -133,7 +133,7 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
   )
 }
 
-function renderFormItem<Values = Record<string, any>>(
+function renderFormItem<Values = Record<PropertyKey, any>>(
   item: FormItemProps<Values>,
   index: number,
   items: FormItemProps<Values>[],

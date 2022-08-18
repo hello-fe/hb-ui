@@ -22,7 +22,7 @@ import type {
 
 // 🚧-①: 屏蔽 React.StrictMode 副作用
 
-export interface TableProps<RecordType = Record<string, any>> extends Omit<AntdTableProps<RecordType>, 'columns'> {
+export interface TableProps<RecordType = Record<PropertyKey, any>> extends Omit<AntdTableProps<RecordType>, 'columns'> {
   columns?: (AntdColumnType<RecordType> & {
     formItem?: FormItemProps & {
       input?: InputProps
@@ -46,11 +46,11 @@ export interface TableProps<RecordType = Record<string, any>> extends Omit<AntdT
   }
 }
 
-export type TableColumn<RecordType = Record<string, any>> = TableProps<RecordType>['columns'][number]
-export type TableQuery<RecordType = Record<string, any>> = TableProps<RecordType>['query']
-export type TableHandle<RecordType = Record<string, any>> = TableProps<RecordType>['handle']
+export type TableColumn<RecordType = Record<PropertyKey, any>> = TableProps<RecordType>['columns'][number]
+export type TableQuery<RecordType = Record<PropertyKey, any>> = TableProps<RecordType>['query']
+export type TableHandle<RecordType = Record<PropertyKey, any>> = TableProps<RecordType>['handle']
 
-function TableAntd<RecordType = Record<string, any>, FormValues = Record<string, any>>(props: TableProps<RecordType>) {
+function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<PropertyKey, any>>(props: TableProps<RecordType>) {
   const {
     columns,
     dataSource,
@@ -158,7 +158,7 @@ export default TableAntd
  * 可编辑表格实现
  * @see https://ant.design/components/table/#components-table-demo-edit-cell
  */
-function editComponents<RecordType = Record<string, any>, FormValues = Record<string, any>>(
+function editComponents<RecordType = Record<PropertyKey, any>, FormValues = Record<PropertyKey, any>>(
   args: {
     onFieldChange?: (args: { key: string; value: any; index: number }) => void,
   } = {},
@@ -256,7 +256,7 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
     },
   }
 }
-editComponents.withOnCell = function onCell<RecordType = Record<string, any>>(columns: TableColumn<RecordType>[]): typeof columns {
+editComponents.withOnCell = function onCell<RecordType = Record<PropertyKey, any>>(columns: TableColumn<RecordType>[]): typeof columns {
   return columns.map(column => ({
     ...column,
     // 透传至 components.body.cell

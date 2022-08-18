@@ -24,8 +24,8 @@ const Tooltip = { ...ElementTooltip }
 // @ts-ignore
 Tooltip.props.content.type = [String, Object]
 
-export interface TableProps<RowType = Record<string, any>> {
-  columns: (Partial<ElTableColumn> & Record<string, any> & {
+export interface TableProps<RowType = Record<PropertyKey, any>> {
+  columns: (Partial<ElTableColumn> & Record<PropertyKey, any> & {
     // Form 元素
     // 与元素签名一致
     input?: Partial<ElInput> & { rules?: ElFormItem['rules'] }
@@ -67,20 +67,20 @@ export interface TableProps<RowType = Record<string, any>> {
     /** Total item count */
     total: number
     /** 泛化 */
-    props?: Partial<ElPagination & Record<string, any>>
+    props?: Partial<ElPagination & Record<PropertyKey, any>>
   }
   handle?: {
     query: (args?: Omit<Parameters<TableQuery<RowType>>[0], 'count'>) => void
   }
   /** 泛化 */
-  props?: Partial<ElTable & Record<string, any>>
+  props?: Partial<ElTable & Record<PropertyKey, any>>
 }
 
-export type TableColumn<RowType = Record<string, any>> = TableProps<RowType>['columns'][number]
-export type TableData<RowType = Record<string, any>> = TableProps<RowType>['data'][number]
-export type TableQuery<RowType = Record<string, any>> = TableProps<RowType>['query']
+export type TableColumn<RowType = Record<PropertyKey, any>> = TableProps<RowType>['columns'][number]
+export type TableData<RowType = Record<PropertyKey, any>> = TableProps<RowType>['data'][number]
+export type TableQuery<RowType = Record<PropertyKey, any>> = TableProps<RowType>['query']
 export type TablePagination = Pick<TableProps['pagination'], 'currentPage' | 'pageSize' | 'total'>
-export type TableHandle<RowType = Record<string, any>> = TableProps<RowType>['handle']
+export type TableHandle<RowType = Record<PropertyKey, any>> = TableProps<RowType>['handle']
 
 // 这里与 export default 类型并不匹配，Vue2 提供的 ts 并不完整
 const TableElementUI: Component<
@@ -94,7 +94,7 @@ const TableElementUI: Component<
     onSizeChange: (size: number) => void,
     queryHandle: () => void,
   },
-  Record<string, any>,
+  Record<PropertyKey, any>,
   TableProps
 > = {
   name: 'hb-ui-table',

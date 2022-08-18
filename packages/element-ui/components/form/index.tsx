@@ -44,7 +44,7 @@ export interface FormProps {
   col?: ElCol,
 }
 
-function mergeEvents<T extends { on?: Record<string, any> }>({ on, ...rest }: T) {
+function mergeEvents<T extends { on?: Record<PropertyKey, any> }>({ on, ...rest }: T) {
   return {
     ...rest,
     on: {
@@ -61,16 +61,16 @@ function mergeEvents<T extends { on?: Record<string, any> }>({ on, ...rest }: T)
 
 const FormElementUI: Component<
   () => {
-    originFormModel: Record<string, any>,
+    originFormModel: Record<PropertyKey, any>,
     filterKey: string,
   },
   {
-    getParams: () => Record<string, any>,
+    getParams: () => Record<PropertyKey, any>,
     cachesParams: () => void,
     onFormSubmit: () => void,
     onFormReset: () => void,
   },
-  Record<string, any>,
+  Record<PropertyKey, any>,
   FormProps
 > = {
   name: 'hb-ui-form',
