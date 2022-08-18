@@ -21,7 +21,7 @@ const FormTsx: Component = {
       cache: { filterKey: 'filterData' },
       onSubmit: this.onSubmit,
       handle: this.formHandle,
-      elements: [
+      items: [
         {
           label: '地区',
           prop: 'area',

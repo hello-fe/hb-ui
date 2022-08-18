@@ -13,7 +13,7 @@ import type { ElCol } from 'element-ui/types/col'
 import type { ElRow } from 'element-ui/types/row'
 import type { ElDatePicker } from 'element-ui/types/date-picker'
 import type { ElForm } from 'element-ui/types/form'
-import type { ElFormItem } from 'element-ui/types/form-item'
+import type { ElFormItem as ElFormItem2 } from 'element-ui/types/form-item'
 import type { ElInput } from 'element-ui/types/input'
 import type { ElSelect } from 'element-ui/types/select'
 import type { Component, VNodeData } from 'vue'
@@ -25,21 +25,22 @@ export type HBSelect = Partial<ElSelect> &
 export type HBDatePicker = Partial<ElDatePicker> & VNodeData
 type CacheType = { filterKey?: string } | boolean
 
-export interface FormElement extends Partial<ElFormItem> {
-  render?: () => JSX_ELEMENT
+export interface ElFormItem extends Partial<ElFormItem2> {
   input?: HBInput
   select?: HBSelect
   datePicker?: HBDatePicker
+  render?: () => JSX_ELEMENT
   col?: ElCol
 }
 export interface FormProps {
-  elements: (FormElement | (() => JSX_ELEMENT))[]
+  props: Partial<ElForm>
+  items: (ElFormItem | (() => JSX_ELEMENT))[]
+  /** 预留给 [提交/重置] 的位置 */
+  lastItem?: false | ((nodes: import('vue').VNode[]) => JSX_ELEMENT)
   onSubmit?: () => Promise<void | boolean> | void | boolean
   onReset?: () => void
   handle?: ElForm
   cache?: CacheType
-  footer?: false | JSX_ELEMENT
-  props: Partial<ElForm>
   row?: ElRow,
   col?: ElCol,
 }
@@ -59,7 +60,7 @@ function mergeEvents<T extends { on?: Record<PropertyKey, any> }>({ on, ...rest 
   }
 }
 
-const FormElementUI: Component<
+const FormItemUI: Component<
   () => {
     originFormModel: Record<PropertyKey, any>,
     filterKey: string,
@@ -88,11 +89,12 @@ const FormElementUI: Component<
       type: Object as { (): ElForm },
       default: () => ({}),
     },
-    elements: {
+    items: {
       // @ts-ignore
       type: Array,
       default: () => [],
     },
+    lastItem: undefined,
     // @ts-ignore
     onSubmit: Function,
     onReset: Function,
@@ -106,7 +108,11 @@ const FormElementUI: Component<
       type: [Object as { (): CacheType }, Boolean],
       default: false,
     },
-    footer: false,
+    row: undefined,
+    col: {
+      // @ts-ignore
+      default: () => ({ xs: 12, sm: 12, md: 8, lg: 8, xl: 3, }),
+    },
   },
   mounted() {
     const { handle, cache, props } = this.$props
@@ -170,10 +176,10 @@ const FormElementUI: Component<
   },
 
   render() {
-    const { props, elements, footer, row, col = { xs: 12, sm: 12, md: 8, lg: 8, xl: 3, } } = this.$props as FormProps
+    const { props, items, lastItem, row, col } = this.$props as FormProps
 
-    const renderElement = (element: FormElement) => {
-      const { prop, render, input = {}, select, datePicker } = element
+    const renderItem = (item: ElFormItem) => {
+      const { prop, render, input = {}, select, datePicker } = item
       const ComponentsMap = {
         input: ({ on, attrs, ...omit }: HBInput) => (
           <Input
@@ -223,7 +229,7 @@ const FormElementUI: Component<
       }
 
       if (typeof render === 'function') {
-        return render;
+        return render
       } else if (select) {
         return ComponentsMap['select'](mergeEvents<HBSelect>(select))
       } else if (datePicker) {
@@ -233,31 +239,40 @@ const FormElementUI: Component<
       }
     }
 
+    const renderLastItem = (lastItem: FormProps['lastItem']) => {
+      if (lastItem === false) {
+        return null
+      }
+      const nodes = [
+        // @ts-ignore
+        <Button key="last-1" type='primary' onClick={this.onFormSubmit}>查询</Button>,
+        // @ts-ignore
+        <Button key="last-2" onClick={this.onFormReset}>重置</Button>,
+      ]
+      if (typeof lastItem === 'function') {
+        return lastItem(nodes)
+      }
+      return <span>{nodes}</span>
+    }
+
     return (
       // @ts-ignore
       <Form ref='hb-ui-form' {...{ props: { inline: true, ...props } }}>
         <Row {...{ props: row }}>
-          {elements.map((element) => typeof element === 'function' ? element() : (
-            <Col {...{ props: element.col || col }}>
-              <FormItem {...{ props: element }}
+          {items.map(item => typeof item === 'function' ? item() : (
+            <Col {...{ props: item.col || col }}>
+              <FormItem {...{ props: item }}
               // Todo scopedSlots 生效但失去双向绑定
               >
-                {renderElement(element)}
+                {renderItem(item)}
               </FormItem>
             </Col>
           ))}
         </Row>
-        {footer ?? (
-          <span>
-            {/* @ts-ignore */}
-            <Button type='primary' onClick={this.onFormSubmit}>查询</Button>
-            {/* @ts-ignore */}
-            <Button onClick={this.onFormReset}>重置</Button>
-          </span>
-        )}
+        {renderLastItem(lastItem)}
       </Form>
     )
   },
 }
 
-export default FormElementUI as any
+export default FormItemUI as any
