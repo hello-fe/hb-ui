@@ -36,15 +36,18 @@ export interface FormProps {
   props: Partial<ElForm>
   items: (ElFormItem | (() => JSX_ELEMENT))[]
   /** 预留给 [提交/重置] 的位置 */
-  lastItem?:
-  | (Partial<ElFormItem2> & { col?: ElCol /* TODO: render props(小) */ })
+  lastItem?: // 如果需要 label 宽度对齐，传递 label=' ' 后 labelWidth 生效
+  | (Partial<ElFormItem2> & {
+    col?: ElCol
+    render?: (nodes: import('vue').VNode[]) => JSX_ELEMENT // render props(小)
+  })
   | ((nodes: import('vue').VNode[]) => JSX_ELEMENT) // render function(大)
   onSubmit?: () => Promise<void | boolean> | void | boolean
   onReset?: () => void
   handle?: ElForm
   cache?: CacheType
-  row?: ElRow,
-  col?: ElCol,
+  row?: ElRow
+  col?: ElCol
 }
 
 function mergeEvents<T extends { on?: Record<PropertyKey, any> }>({ on, ...rest }: T) {
@@ -253,7 +256,7 @@ const FormItemUI: Component<
       }
       return (
         <Col {...{ props: lastItem?.col || col }}>
-          <FormItem {...{ props: lastItem }}>{nodes}</FormItem>
+          <FormItem {...{ props: lastItem }}>{lastItem.render ? lastItem.render(nodes) : nodes}</FormItem>
         </Col>
       )
     }
