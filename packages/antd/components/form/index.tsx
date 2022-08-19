@@ -50,8 +50,11 @@ export interface FormProps<Values = Record<PropertyKey, any>> extends AntdFormPr
   )[]
   /** 预留给 [提交/重置] 的位置 */
   lastItem?:
-  | (AntdFormItemProps & { col?: ColProps /* TODO: render props(小) */ })
-  | ((form: FormInstance<Values>) => JSX.Element) // render function(大)
+  | (AntdFormItemProps & {
+    col?: ColProps
+    render?: (nodes: JSX.Element[], form: FormInstance<Values>) => JSX.Element // render props(小)
+  })
+  | ((nodes: JSX.Element[], form: FormInstance<Values>) => JSX.Element) // render function(大)
   onSubmit?: (values: Values, form: FormInstance<Values>) => void
   row?: RowProps
   col?: ColProps
@@ -102,6 +105,11 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     }
   }
 
+  const lastItemNodes = [
+    <Button key='last-1' type='primary' onClick={clickSubmit}>提交</Button>,
+    <Button key='last-2' style={{ marginLeft: 10 }} onClick={() => form.resetFields()}>重置</Button>,
+  ]
+
   return (
     <Form
       className={['hb-ui-form', className].filter(Boolean).join(' ')}
@@ -116,15 +124,14 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
           ? item()
           : <Col {...(item.col || col)} key={index}>{renderFormItem(form, item, index)}</Col>
         )}
-        {typeof lastItem === 'function' ? lastItem(form) : (
+        {typeof lastItem === 'function' ? lastItem(lastItemNodes, form) : (
           <Col {...(lastItem?.col || col)}>
             <Form.Item
               key='last-item'
               label=' '
               {...lastItem}
             >
-              <Button type='primary' onClick={clickSubmit}>提交</Button>
-              <Button style={{ marginLeft: 10 }} onClick={() => form.resetFields()}>重置</Button>
+              {lastItem.render ? lastItem.render(lastItemNodes, form) : lastItemNodes}
             </Form.Item>
           </Col>
         )}
