@@ -62,21 +62,11 @@ export type FormItemProps<Values = Record<string, any>> = FormProps<Values>['ite
 function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
 
   const colDefault: ColProps = {
-    sm: {
-      span: 24
-    },
-    md: {
-      span: 12
-    },
-    lg: {
-      span: 8
-    },
-    xl: {
-      span: 6
-    },
-    xxl: {
-      span: 3
-    }
+    sm: 24,
+    md: 12,
+    lg: 8,
+    xl: 6,
+    xxl: 3
   }
 
   const {
