@@ -25,12 +25,14 @@ import type { OptionRecord, JSX_ELEMENT } from '../types'
  * props.data、props.pagination 设计为单向数据流
  */
 
+// TODO: 🚧 input、select 等支持事件的组件参数需要重新设计 (参考 Table)
+
 const Tooltip = { ...ElementTooltip }
 // 屏蔽 Tooltip.content 传入组件警告
 // @ts-ignore
 Tooltip.props.content.type = [String, Object]
 
-export interface TableProps<RowType = Record<PropertyKey, any>> {
+export interface TableProps<RowType = Record<PropertyKey, any>> extends Partial<ElTable>, Record<PropertyKey, any> {
   columns: (Partial<ElTableColumn> & Record<PropertyKey, any> & {
     formItem?: Partial<ElFormItem> & {
       input?: Partial<ElInput>
@@ -54,7 +56,6 @@ export interface TableProps<RowType = Record<PropertyKey, any>> {
       row: RowType
     }) => JSX_ELEMENT
   })[]
-  data?: RowType[]
   /** 返回 undefined 代表打断请求 */
   query?: (args: {
     /** 请求次数，当不想自动发起首次请求时可以判断 count==1 返回 undefined 打断请求 */
@@ -78,8 +79,6 @@ export interface TableProps<RowType = Record<PropertyKey, any>> {
     query: (args?: Omit<Parameters<TableQuery<RowType>>[0], 'count'>) => void
     form: ElForm
   }
-  /** 泛化 */
-  props?: Partial<ElTable & Record<PropertyKey, any>>
 }
 
 export type TableColumn<RowType = Record<PropertyKey, any>> = TableProps<RowType>['columns'][number]
@@ -103,7 +102,7 @@ const TableElementUI: Component<
     queryHandle: () => void,
   },
   Record<PropertyKey, any>,
-  TableProps
+  { $props: TableProps }
 > = {
   name: 'hb-ui-table',
   data() {
@@ -117,20 +116,7 @@ const TableElementUI: Component<
     }
   },
   props: {
-    columns: {
-      // @ts-ignore
-      type: Array,
-      default: () => [],
-    },
-    // @ts-ignore
-    data: [Object, Array],
-    // @ts-ignore
-    query: Function,
-    // @ts-ignore
-    pagination: [Object, null],
-    // @ts-ignore
-    handle: Object,
-    props: Object,
+    $props: Object as unknown as TableProps,
   },
   mounted() {
     const props = this.$props as TableProps
@@ -201,8 +187,9 @@ const TableElementUI: Component<
     },
   },
   render() {
-    const props = this.$props as TableProps
     const _this = Object.assign(this, { $createElement: arguments[0] })
+    const props = this.$props as TableProps
+    const { columns: _c, data: _d, on: onTable, ...restTable } = props
 
     return (
       <div class="hb-ui-table">
@@ -215,8 +202,7 @@ const TableElementUI: Component<
           <ElementTable
             v-loading={this.loading}
             data={this.formModel.tableData}
-            on-selection-change={props.props?.['on-selection-change'] || noop}
-            {...{ props: props.props }}
+            {...restTable}
           >
             {props.columns.map((column, index, columns) => (
               // 1. 修复 type=selection 复选排版错位 BUG
@@ -289,16 +275,18 @@ function renderColumn(column: TableColumn, index: number) {
     } = formItem
 
     if (typeof input === 'object') {
-      const { placeholder = '请输入', ...restInput } = input
+      // @ts-ignore
+      const { placeholder = '请输入', on: onInput, ...restInput } = input
       node = ({ row, $index }) => (
         // @ts-ignore
         <FormItem prop={formTableProp($index, prop)} {...{ props: restFormItem }}>
           {/*  @ts-ignore */}
-          <Input clearable v-model={row[prop]} placeholder={placeholder} {...{ props: restInput }} />
+          <Input clearable v-model={row[prop]} placeholder={placeholder} {...{ props: restInput, on: onInput }} />
         </FormItem>
       )
     } else if (typeof select === 'object') {
-      const { options: opts, placeholder = '请选择', ...restSelect } = select
+      // @ts-ignore
+      const { options: opts, placeholder = '请选择', on: onSelect, ...restSelect } = select
       node = args => {
         const { row, $index } = args
         const options = typeof opts === 'function' ? opts(args) : opts
@@ -306,7 +294,7 @@ function renderColumn(column: TableColumn, index: number) {
           // @ts-ignore
           <FormItem prop={formTableProp($index, prop)} {...{ props: restFormItem }}>
             {/* @ts-ignore */}
-            <Select clearable v-model={row[prop]} placeholder={placeholder} {...{ props: restSelect }}>
+            <Select clearable v-model={row[prop]} placeholder={placeholder} {...{ props: restSelect, on: onSelect }}>
               {/* @ts-ignore */}
               {options.map((opt, idx) => <Option key={idx} {...{ props: opt }} />)}
             </Select>
