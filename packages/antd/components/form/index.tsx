@@ -131,7 +131,7 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
               label=' '
               {...lastItem}
             >
-              {lastItem.render ? lastItem.render(lastItemNodes, form) : lastItemNodes}
+              {lastItem?.render ? lastItem.render(lastItemNodes, form) : lastItemNodes}
             </Form.Item>
           </Col>
         )}
