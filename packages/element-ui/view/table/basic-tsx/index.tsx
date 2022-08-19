@@ -51,6 +51,7 @@ const TableTsx: Component = {
       query: args => this.query(args),
       handle: this.tableHandle,
       columns: [
+        { type: 'selection' },
         {
           label: '姓名',
           prop: 'name',
@@ -81,11 +82,18 @@ const TableTsx: Component = {
       ],
       // 关闭分页
       // pagination: null,
+      style: 'color: #fa6470',
+      props: { border: true },
+      on: {
+        'selection-change'(rows) {
+          console.log('rows:', rows)
+        },
+      },
     }
 
     return (
       <div>
-        <Table {...{ props: tableProps }} />
+        <Table $props={tableProps} />
       </div>
     )
   }

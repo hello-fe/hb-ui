@@ -104,7 +104,7 @@ const TableTsx: Component = {
         <div style="padding-bottom:10px; margin-bottom:10px; border-bottom:1px solid #dedede;">
           <Button type="primary" on-click={this.submitTable}>提交</Button>
         </div>
-        <Table {...{ props: tableProps }} />
+        <Table $props={tableProps} />
       </div>
     )
   }

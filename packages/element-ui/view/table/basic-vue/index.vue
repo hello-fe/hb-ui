@@ -1,9 +1,6 @@
 <template>
   <div>
-    <hb-ui-table
-      :columns="columns"
-      :data="data"
-    >
+    <hb-ui-table :$props="tableProps">
       <!-- TODO: slot -->
     </hb-ui-table>
   </div>
@@ -13,8 +10,7 @@
 import { Component } from 'vue'
 import {
   Table,
-  TableColumn,
-  TableData,
+  TableProps,
 } from 'root/components'
 
 export interface RowType {
@@ -32,33 +28,35 @@ export default {
   data() {
 
     return {
-      columns: [
-        {
-          label: '姓名',
-          prop: 'name',
-          tooltip: {},
-        },
-        {
-          label: '年龄',
-          prop: 'age',
-        },
-        {
-          label: '性别',
-          prop: 'gender',
-        },
-        {
-          label: '时间',
-          prop: 'date',
-        },
-        {
-          label: '操作',
-          prop: '操作',
-        },
-      ] as TableColumn<RowType>[],
-      data: [
-        { name: '张三', age: 23, gender: 1, date: Date.now() },
-        { name: '阿宁', age: 24, gender: 0, date: Date.now() },
-      ] as TableData<RowType>[],
+      tableProps: {
+        columns: [
+          {
+            label: '姓名',
+            prop: 'name',
+            tooltip: {},
+          },
+          {
+            label: '年龄',
+            prop: 'age',
+          },
+          {
+            label: '性别',
+            prop: 'gender',
+          },
+          {
+            label: '时间',
+            prop: 'date',
+          },
+          {
+            label: '操作',
+            prop: '操作',
+          },
+        ],
+        data: [
+          { name: '张三', age: 23, gender: 1, date: Date.now() },
+          { name: '阿宁', age: 24, gender: 0, date: Date.now() },
+        ],
+      } as TableProps<RowType>,
     }
   }
 } as Component
