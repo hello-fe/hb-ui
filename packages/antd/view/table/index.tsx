@@ -20,7 +20,7 @@ export default () => {
     { id: '1', name: '张三', age: 23, gender: 1, date: Date.now() },
     { id: '2', name: '阿宁', age: 24, gender: 0, date: Date.now() },
   ])
-  const handle = {} as TableHandle
+  const handle = {} as TableHandle<RecordType>
 
   const reload = () => {
     handle?.query()
