@@ -1,9 +1,9 @@
-import Vue, { VNode } from 'vue'
+import Vue, { VNode, ComponentOptions } from 'vue'
 
 declare global {
   namespace JSX {
-    interface Element extends VNode {}
-    interface ElementClass extends Vue {}
+    interface Element extends VNode { }
+    interface ElementClass extends Vue { }
     interface IntrinsicElements {
       [elem: string]: {
         class?: string
@@ -11,4 +11,8 @@ declare global {
       }
     }
   }
+}
+
+declare module 'vue/types/options' {
+  interface ComponentOptions extends Record<PropertyKey, any> { }
 }
