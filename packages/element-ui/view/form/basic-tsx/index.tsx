@@ -80,15 +80,14 @@ const FormTsx: Component = {
         //   }
         // }
       ],
-      props: {
-        model: this.formModel,
-        labelWidth: '87px',
-        inline: true,
-      }
+      model: this.formModel,
+      labelWidth: '87px',
+      style: 'color: #fa6470',
+      inline: false,
     }
 
     return (
-      <Form {...{ props: formProps }} />
+      <Form $props={formProps} />
     )
   },
 }

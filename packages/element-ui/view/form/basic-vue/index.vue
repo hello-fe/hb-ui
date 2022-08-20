@@ -1,11 +1,5 @@
 <template>
-  <hb-ui-form
-    :props="props"
-    :elements="elements"
-    :cache="true"
-    :onSubmit="onSubmit"
-    :handle="formHandle"
-  />
+  <hb-ui-form :$props="formProps" />
 </template>
 
 <script lang="ts">
@@ -19,14 +13,9 @@ export default {
   data() {
     const model = { age: 10 };
 
-    const props: FormProps['prop'] = {
-      model,
-      labelWidth: '87px',
-    }
-
     const formHandle = {};
 
-    const elements: FormProps['elements'] = [
+    const items: FormProps['elements'] = [
         { label: '年龄', prop: 'age'},
         { label: '地区', prop: 'area', rules: {required: true, message: '填写地区'}},
         { label: '地区', 
@@ -50,10 +39,12 @@ export default {
       ]
 
     return {
-      model,
-      elements,
-      props,
-      formHandle,
+      formProps: {
+        model,
+        labelWidth: '87px',
+        items,
+        formHandle,
+      }
     }
   },
   methods: {
