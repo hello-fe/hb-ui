@@ -152,9 +152,7 @@ const FormItemUI: Component<
 
     const renderLastItem = (lastItem: FormProps['lastItem']) => {
       const nodes = [
-        // @ts-ignore
         <Button key="last-1" type='primary' onClick={this.onFormSubmit}>查询</Button>,
-        // @ts-ignore
         <Button key="last-2" onClick={this.onFormReset}>重置</Button>,
       ]
       if (typeof lastItem === 'function') {
@@ -170,7 +168,6 @@ const FormItemUI: Component<
     }
 
     return (
-      // @ts-ignore
       <Form ref={name} {...mergeProps(props)}>
         <Row {...{ props, row }}>
           {items.map((item, index) => typeof item === 'function' ? item(index, this.$refs[name]) : (
@@ -207,8 +204,12 @@ function renderFormItem(
   let node: JSX_ELEMENT | (() => JSX_ELEMENT)
   const defaultNode = () => {
     const { placeholder = `请输入${item.label || ''}` } = input || {}
-    // @ts-ignore
-    return <Input v-model={props.props.model[item.props.prop]} placeholder={placeholder} clearable {...mergeProps(input)} />
+    return <Input
+      clearable
+      v-model={props.props.model[item.props.prop]}
+      placeholder={placeholder}
+      {...mergeProps(input)}
+    />
   }
 
   if (render) {
@@ -218,13 +219,16 @@ function renderFormItem(
   } else if (select) {
     const { placeholder = `请选择${item.label || ''}`, options } = select
     node = (
-      // @ts-ignore
-      <Select v-model={props.props.model[item.props.prop]} placeholder={placeholder} clearable {...mergeProps(select)}>
+      <Select
+        clearable
+        v-model={props.props.model[item.props.prop]}
+        placeholder={placeholder}
+        {...mergeProps(select)}
+      >
         {options.map(option => <Option {...{ props: option, ...option }} />)}
       </Select>
     )
   } else if (datePicker) {
-    // @ts-ignore
     node = <DatePicker
       clearable
       v-model={props.props.model[item.props.prop]}
