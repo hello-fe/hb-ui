@@ -65,21 +65,11 @@ export type FormItemProps<Values = Record<PropertyKey, any>> = FormProps<Values>
 function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
 
   const colDefault: ColProps = {
-    sm: {
-      span: 24
-    },
-    md: {
-      span: 12
-    },
-    lg: {
-      span: 8
-    },
-    xl: {
-      span: 6
-    },
-    xxl: {
-      span: 3
-    }
+    sm: 24,
+    md: 12,
+    lg: 8,
+    xl: 6,
+    xxl: 3
   }
 
   const {
@@ -131,7 +121,7 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
               label=' '
               {...lastItem}
             >
-              {lastItem.render ? lastItem.render(lastItemNodes, form) : lastItemNodes}
+              {lastItem?.render ? lastItem.render(lastItemNodes, form) : lastItemNodes}
             </Form.Item>
           </Col>
         )}
