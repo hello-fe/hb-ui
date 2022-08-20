@@ -23,8 +23,11 @@ const FormTsx: Component = {
       handle: this.formHandle,
       items: [
         {
-          label: '地区',
-          prop: 'area',
+          props: {
+            label: '地区',
+            prop: 'area',
+            rules: { required: true, message: '请选择地区' },
+          },
           select: {
             options: [
               { value: '1', label: 'one' },
@@ -34,56 +37,60 @@ const FormTsx: Component = {
               change: (e) => { console.log('change', e) },
               input: (e) => { console.log('input', e) },
             },
-            // onChange: (e)=>{console.log(22, e)},
-            // onInput: (e)=>{console.log(33, e)},
             clearable: true,
           },
-          rules: { required: true, message: '请选择地区' },
         },
         {
-          label: '姓名',
-          prop: 'name',
-          rules: { required: true, message: '请输入姓名' },
+          props: {
+            label: '姓名',
+            prop: 'name',
+            rules: { required: true, message: '请输入姓名' },
+          },
           // $scopedSlots: {
           //   label: () => <span><i class='el-icon-s-flag' />年龄</span>
           // }
         },
         {
-          label: '年龄',
-          prop: 'age',
-          input: {
-            // on: {
-            //   change: (e) => console.log('change', e),
-            //   input: (e) => console.log('input', e),
-            //   focus: (e) => console.log('focus', e),
-            // },
-            // maxlength: 2,
-            onChange: (e) => { console.log(222, e) },
-            // clearable: true,
-            // prefixIcon: "el-icon-search",
-            // suffixIcon: "el-icon-search",
+          props: {
+            label: '年龄',
+            prop: 'age',
           },
-          scopedSlots2: {
-            label: () => <span><i class='el-icon-s-flag' /></span>
-          }
+          input: {
+            on: {
+              change: (e) => console.log('change', e),
+              input: (e) => console.log('input', e),
+              focus: (e) => console.log('focus', e),
+            },
+            attrs: {
+              maxlength: 9,
+              placeholder: 'maxlength=9',
+              prefixIcon: "el-icon-search",
+              suffixIcon: "el-icon-search",
+            },
+          },
         },
         // {
-        //   label: '完成时间',
-        //   prop: 'finishDate',
+        //   props: {
+        //     label: '完成时间',
+        //     prop: 'finishDate',
+        //   },
         //   datePicker: {
-        //     type: 'daterange',
+        //     props: {
+        //       type: 'daterange',
+        //     },
         //     on: {
         //       change: (e)=>console.log(111,e),
         //       input: (e)=>console.log(222,e),
         //       focus: (e)=>console.log(333,e),
         //     }
-        //   }
+        //   },
         // }
       ],
-      model: this.formModel,
-      labelWidth: '87px',
-      style: 'color: #fa6470',
-      inline: false,
+      props: {
+        model: this.formModel,
+        labelWidth: '87px',
+        style: 'color: #fa6470',
+      },
     }
 
     return (

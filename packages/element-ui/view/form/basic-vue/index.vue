@@ -13,16 +13,32 @@ export default {
   data() {
     const model = { age: 10 };
 
-    const formHandle = {};
+    const handle = {};
 
-    const items: FormProps['elements'] = [
-        { label: '年龄', prop: 'age'},
-        { label: '地区', prop: 'area', rules: {required: true, message: '填写地区'}},
-        { label: '地区', 
-          prop: 'area', 
+    const items: FormProps['items'] = [
+        {
+          props: { 
+            label: '年龄',
+            prop: 'age',
+          },
+        },
+        {
+          props: {
+            label: '地区',
+            prop: 'area',
+            rules: { required: true, message: '填写地区' },
+          },
+        },
+        {
+          props: {
+            label: '地区', 
+            prop: 'area',
+          },
           select: { 
-            options: [{label: '1',value:'a'}, {label: '2',value:'b'}],
-            // onChange: (e) => { console.log('change', e) },
+            options: [
+              { label: '1', value: 'a' },
+              { label: '2', value:'b' },
+            ],
             on: {
               change: (e)=> {console.log('onChange', e)}
             },
@@ -30,8 +46,10 @@ export default {
         },
         () => 111,
         {
-          label: '身高', 
-          prop: 'height',
+          props: {
+            label: '身高', 
+            prop: 'height',
+          },
         }
         // { label: '时间', prop: 'time', 
         //   datePicker: { type: 'daterange' }
@@ -40,16 +58,18 @@ export default {
 
     return {
       formProps: {
-        model,
-        labelWidth: '87px',
+        props: {
+          model,
+          labelWidth: '87px',
+        },
         items,
-        formHandle,
+        handle,
       }
     }
   },
   methods: {
       async onSubmit(){
-      try { await this.formHandle.validate(); } catch (error) { return; }
+      try { await this.handle.validate(); } catch (error) { return; }
       console.log(this.model)
     }
     }
