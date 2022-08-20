@@ -27,7 +27,8 @@ export interface TableProps<RecordType = Record<PropertyKey, any>> extends Omit<
     formItem?: FormItemProps & {
       input?: InputProps
       select?: SelectProps
-      // TODO: 其他 Form 元素
+      // render props(小)
+      render?: (...args: Parameters<AntdColumnType<RecordType>['render']>) => JSX.Element
     }
   })[]
   query?: (args: {
@@ -203,7 +204,7 @@ function editComponents<RecordType = Record<PropertyKey, any>, FormValues = Reco
             const {
               input,
               select,
-              // TODO: 其他 Form 元素
+              render,
             } = formItem as TableColumn<RecordType>['formItem']
 
             // 当前列为 Form 元素，将原数据备份到 dataIndex_old 中
@@ -212,7 +213,13 @@ function editComponents<RecordType = Record<PropertyKey, any>, FormValues = Reco
               record[backupKey] = record[key]
             }
 
-            if (input) {
+            if (render) {
+              childNode = (
+                <Form.Item name={key} {...formItem}>
+                  {render(record[key], record, index)}
+                </Form.Item>
+              )
+            } else if (input) {
               const { onInput, onBlur, ...restInput } = input
               childNode = (
                 <Form.Item name={key} {...formItem}>
