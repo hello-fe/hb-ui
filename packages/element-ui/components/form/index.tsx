@@ -23,15 +23,13 @@ import type { OptionRecord, JSX_ELEMENT } from '../types'
 // ## 设计原则
 // 1. jsx 属性最终兼容 import('vue').VNodeData
 
-// ## 属性分类
-// 1. 组件属性             - 写在顶级
-// 2. element-ui 属性     - 写在顶级
-// 3. element-ui 事件     - 写在 on
-// 4. html、vue 属性、事件 - 写在标签
-
-export interface FormProps extends Partial<ElForm>, VNodeData {
+export interface FormProps extends VNodeData {
+  // over write
+  props: Partial<ElForm>,
   items: (
     | (Partial<ElFormItem> & VNodeData & {
+      // over write
+      props: Partial<ElFormItem>,
       input?: Partial<ElInput> & VNodeData
       select?: Partial<ElSelect> & VNodeData & { options: (OptionRecord & Partial<ElOption>)[] }
       datePicker?: Partial<ElDatePicker> & VNodeData
@@ -44,6 +42,8 @@ export interface FormProps extends Partial<ElForm>, VNodeData {
   /** 预留给 [提交/重置] 的位置 */
   lastItem?: // 如果需要 label 宽度对齐，传递 label=' ' 后 labelWidth 生效
   | (Partial<ElFormItem> & {
+    // over write
+    props: Partial<ElFormItem>,
     col?: Partial<ElCol>
     render?: (nodes: import('vue').VNode[], handle: ElForm) => JSX_ELEMENT // render props(小)
   })
@@ -74,11 +74,12 @@ const FormItemUI: Component<
   data() {
     const props = this.$props as FormProps
 
+    if (!props.props) props.props = {}
     // props 默认内部提供 model
-    if (!props.model) props.model = {}
+    if (!props.props.model) props.props.model = {}
 
     return {
-      originalModel: { ...props.model },
+      originalModel: { ...props.props.model },
     }
   },
   computed: {
@@ -108,7 +109,7 @@ const FormItemUI: Component<
       const params = getParams()
       if (params[this.cacheKey]) {
         for (const [k, v] of Object.entries(JSON.parse(params[this.cacheKey]))) {
-          this.$set(props.model, k, v)
+          this.$set(props.props.model, k, v)
         }
       }
     }
@@ -117,19 +118,19 @@ const FormItemUI: Component<
     async onFormSubmit() {
       const props = this.$props as FormProps
       if (props.onSubmit) {
-        const needCacheParams = await props.onSubmit(props.model, this.$refs[name])
+        const needCacheParams = await props.onSubmit(props.props.model, this.$refs[name])
         // 阻止缓存 🤔
         if (needCacheParams === false) return
       }
-      if (this.cacheKey) cacheParams(this.cacheKey, props.model)
+      if (this.cacheKey) cacheParams(this.cacheKey, props.props.model)
     },
     onFormReset() {
       const props = this.$props as FormProps
-      for (const k of Object.keys(props.model)) {
-        props.model[k] = this.originalModel[k]
+      for (const k of Object.keys(props.props.model)) {
+        props.props.model[k] = this.originalModel[k]
       }
       if (props.onReset) props.onReset()
-      if (this.cacheKey) cacheParams(this.cacheKey, props.model)
+      if (this.cacheKey) cacheParams(this.cacheKey, props.props.model)
     },
   },
 
@@ -161,7 +162,7 @@ const FormItemUI: Component<
       }
       return (
         <Col {...{ props: lastItem?.col || col }}>
-          <FormItem {...{ props: lastItem, attrs: lastItem }}>
+          <FormItem {...mergeProps(lastItem)}>
             {lastItem?.render ? lastItem.render(nodes, this.$refs[name]) : nodes}
           </FormItem>
         </Col>
@@ -207,24 +208,31 @@ function renderFormItem(
   const defaultNode = () => {
     const { placeholder = `请输入${item.label || ''}` } = input || {}
     // @ts-ignore
-    return <Input v-model={props.model[item.prop]} placeholder={placeholder} clearable {...mergeProps(input)} />
+    return <Input v-model={props.props.model[item.props.prop]} placeholder={placeholder} clearable {...mergeProps(input)} />
   }
 
   if (render) {
-    node = render(props.model[item.props.prop], handle)
+    node = render(props.props.model[item.props.prop], handle)
   } else if (input) {
     node = defaultNode
   } else if (select) {
     const { placeholder = `请选择${item.label || ''}`, options } = select
     node = (
       // @ts-ignore
-      <Select v-model={props.model[item.prop]} placeholder={placeholder} clearable {...mergeProps(select)}>
-        {options.map(option => <Option {...mergeProps(option)} />)}
+      <Select v-model={props.props.model[item.props.prop]} placeholder={placeholder} clearable {...mergeProps(select)}>
+        {options.map(option => <Option {...{ props: option, ...option }} />)}
       </Select>
     )
   } else if (datePicker) {
     // @ts-ignore
-    node = <DatePicker v-model={props.model[item.prop]} startPlaceholder='开始日期' endPlaceholder='结束日期' clearable {...mergeProps(datePicker)} />
+    node = <DatePicker
+      clearable
+      v-model={props.props.model[item.props.prop]}
+      placeholder='选择时间'
+      startPlaceholder='开始日期'
+      endPlaceholder='结束日期'
+      {...mergeProps(datePicker)}
+    />
   } else {
     node = defaultNode
   }
@@ -237,60 +245,12 @@ function renderFormItem(
   )
 }
 
-// 将顶级属性事件合并到 on 中
-function mergeEvents<T extends { on?: Record<PropertyKey, any> }>({ on, ...rest }: T) {
-  return {
-    ...rest,
-    on: {
-      ...on,
-      ...Object.entries(rest)
-        .map(([k, v]) => {
-          if (k.startsWith('on') && k !== 'on')
-            return { [k.slice(2).toLowerCase()]: v }
-        })
-        .reduce((a, b) => ({ ...a, ...b }), {}),
-    },
-  }
-}
-
-// 合并 VNodeData
+// TODO: element-ui 属性按照 VNodeData 分类
+// https://zhuanlan.zhihu.com/p/37920151
+// https://github.com/vuejs/babel-helper-vue-jsx-merge-props/blob/master/index.js
+// https://github.com/vuejs/babel-plugin-transform-vue-jsx/blob/HEAD/lib/group-props.js
 function mergeProps(props?: Record<PropertyKey, any>): Record<PropertyKey, any> {
-  // props、attrs 提升到顶级
-  const merged: VNodeData = {
-    props: { ...props, ...props?.props },
-    attrs: { ...props, ...props?.attrs },
-  }
-  const keys = [
-    'key',
-    'slot',
-    'scopedSlots',
-    'ref',
-    'refInFor',
-    'tag',
-    'staticClass',
-    'class',
-    'staticStyle',
-    'style',
-    'props',
-    'attrs',
-    'domProps',
-    'hook',
-    'on',
-    'nativeOn',
-    'transition',
-    'show',
-    'inlineTemplate',
-    'directives',
-    'keepAlive',
-  ]
-
-  for (const key of keys) {
-    if (Object.keys(merged).includes(key)) continue
-    if (!props?.[key]) continue
-    merged[key] = props[key]
-  }
-
-  return merged
+  return props
 }
 
 // 获取缓存
