@@ -170,7 +170,9 @@ const FormItemUI: Component<
 
     const renderLastItem = (lastItem: FormProps['lastItem']) => {
       const nodes = [
+        // @ts-ignore
         <Button key="last-1" type='primary' onClick={this.onFormSubmit}>查询</Button>,
+        // @ts-ignore
         <Button key="last-2" onClick={this.onFormReset}>重置</Button>,
       ]
       if (typeof lastItem === 'function') {
@@ -187,6 +189,7 @@ const FormItemUI: Component<
 
     return (
       <Form
+        // @ts-ignore
         ref={name}
         // Form 使用 mergeProps 会报错
         // [Vue warn]: Invalid handler for event "input": got undefined
