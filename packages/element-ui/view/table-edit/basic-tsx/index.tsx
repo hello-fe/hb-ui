@@ -66,23 +66,43 @@ const TableTsx: Component = {
           label: '年龄',
           prop: 'age',
           formItem: {
-            input: {},
-            rules: { required: true, message: '请输入年龄！' },
+            input: {
+              attrs: {
+                maxlength: 9,
+                style: 'color: #fc6470;',
+                placeholder: '234234234',
+              },
+              props: {
+                type: 'password',
+              },
+              on: {
+                input(value: string) { },
+              },
+            },
+            props: {
+              rules: { required: true, message: '请输入年龄！' },
+            },
           },
         },
         {
           label: '性别',
           prop: 'gender',
-          // render: ({ row }) => row.gender === 1 ? '男' : '女',
           formItem: {
             select: {
               options: [
                 { label: '男', value: 1 },
                 { label: '女', value: 0 },
               ],
+              on: {
+                change(value: any) { },
+              },
             },
-            rules: { required: true, message: '请选择性别！' },
+            props: {
+              rules: { required: true, message: '请选择性别！' },
+            },
           },
+          // render 优先级更高！
+          // render: ({ row }) => row.gender === 1 ? '男' : '女',
         },
         {
           label: '时间',
