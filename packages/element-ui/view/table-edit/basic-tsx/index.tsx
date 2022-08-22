@@ -70,6 +70,10 @@ const TableTsx: Component = {
               attrs: {
                 maxlength: 9,
                 style: 'color: #fc6470;',
+                placeholder: '234234234',
+              },
+              props: {
+                type: 'password',
               },
               on: {
                 input(value: string) { },
