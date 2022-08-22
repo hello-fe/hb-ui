@@ -18,24 +18,11 @@ import type { ElSelect } from 'element-ui/types/select'
 import type { ElTable } from 'element-ui/types/table'
 import type { ElTooltip } from 'element-ui/types/tooltip'
 import type { ElTableColumn } from 'element-ui/types/table-column'
-import type { ElPagination } from 'element-ui/types/pagination'
 import type { OptionRecord, JSX_ELEMENT } from '../types'
-
-/**
- * TODO:
- * 1. edit-table FromItem.prop 报错
- *    [Vue warn]: Error in mounted hook: "Error: please transfer a valid prop path to form item!"
- */
 
 // ## 设计原则
 // 1. jsx 属性最终兼容 import('vue').VNodeData
 // 2. props.data、props.pagination 设计为单向数据流
-
-// ## 属性分类
-// 1. 组件属性             - 写在顶级
-// 2. element-ui 属性     - 写在顶级
-// 3. element-ui 事件     - 写在 on
-// 4. html、vue 属性、事件 - 写在标签
 
 const Tooltip = { ...ElementTooltip }
 // 屏蔽 Tooltip.content 传入组件警告
@@ -79,7 +66,7 @@ export interface TableProps<RowType = Record<PropertyKey, any>> extends Partial<
     pageSize: number
     /** Total item count */
     total: number
-    /** import('vue').VNodeData */
+    /** import('vue').VNodeData & import('element-ui/types/pagination').ElPagination */
     [key: string]: any
   }
   handle?: {
