@@ -116,6 +116,9 @@ const FormItemUI: Component<
       default: () => ({}),
     },
   },
+  created() {
+    formStyle()
+  },
   mounted() {
     const props = this.$props as FormProps
 
@@ -137,7 +140,7 @@ const FormItemUI: Component<
       const props = this.$props as FormProps
       if (props.onSubmit) {
         const needCacheParams = await props.onSubmit(props.props.model, this.$refs[name])
-        // 阻止缓存 🤔
+        // 🤔 阻止缓存
         if (needCacheParams === false) return
       }
       if (this.cacheKey) cacheParams(this.cacheKey, props.props.model)
@@ -160,12 +163,15 @@ const FormItemUI: Component<
       lastItem,
       row,
       col = { xs: 12, sm: 12, md: 8, lg: 8, xl: 3 },
+      props: props_form,
+
       // extra
-      // onSubmit: _1,
-      // onReset: _2,
-      // handle: _3,
-      // cache: _4,
-      // on: _5,
+      onSubmit: _1,
+      onReset: _2,
+      handle: _3,
+      cache: _4,
+
+      ...rest_form
     } = props
 
     const renderLastItem = (lastItem: FormProps['lastItem']) => {
@@ -191,9 +197,11 @@ const FormItemUI: Component<
       <Form
         // @ts-ignore
         ref={name}
+        // 🤔 显式的指定了 class 则不会添加默认 class
+        class={(rest_form.class == null && this.$vnode.data.class == null) ? name : ''}
         // Form 使用 mergeProps 会报错
         // [Vue warn]: Invalid handler for event "input": got undefined
-        {...{ props: Object.assign(props.props, { inline: props.props.inline ?? true }), on: props.on }}
+        {...{ props: Object.assign(props_form, { inline: props_form.inline ?? true }), ...rest_form } as any}
       >
         <Row {...mergeProps(row, { props: CP.Row.props })}>
           {items?.map((item, index) => typeof item === 'function' ? item(index, this.$refs[name]) : (
@@ -486,6 +494,24 @@ function cacheParams(key: string, data: Record<PropertyKey, any>) {
     '',
     `/${location.hash.split('?')[0]}${queryString ? '?' : ''}${queryString}`
   )
+}
+
+function formStyle() {
+  const id = 'hb-ui-form__style'
+  const className = 'hb-ui-form'
+  let oStyle = document.getElementById(id) as HTMLStyleElement
+  if (oStyle) return
+
+  oStyle = document.createElement<'style'>('style')
+  oStyle.id = id
+  oStyle.innerHTML = `
+.${className} .el-form-item__content .el-input,
+.${className} .el-form-item__content .el-select,
+.${className} .el-form-item__content .el-date-editor--date,
+.${className} .el-form-item__content .el-date-editor--daterange { width: 224px; }
+`
+
+  document.head.appendChild(oStyle)
 }
 
 export default FormItemUI as any
