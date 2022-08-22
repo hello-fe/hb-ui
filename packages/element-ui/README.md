@@ -124,9 +124,3 @@ export default {
 
 - 组件强烈推荐使用 tsx、jsx。不妨先看看这篇文章 👉 [在Vue中使用JSX的正确姿势](https://zhuanlan.zhihu.com/p/37920151)
 - jsx 属性最终兼容 `import('vue').VNodeData`
-- 属性分类
-  1. 组件属性             - 写在顶级
-  2. element-ui 属性     - 写在顶级
-  3. element-ui 事件     - 写在 on
-  4. html、vue 属性、事件 - 写在标签
-  
