@@ -217,7 +217,6 @@ const TableElementUI: Component<
           </ElementTable>
         </Form>
         {props.pagination !== null && <Pagination
-          // @ts-ignore
           background
           style="margin-top:15px;text-align:right;"
           layout="total, sizes, prev, pager, next, jumper"
@@ -280,7 +279,6 @@ function renderColumn(
       node = args => {
         const key = formTableProp(args.$index, prop)
         return (
-          // @ts-ignore
           <FormItem prop={key} {...mergeProps(formItem)}>
             {render({ ...args, key })}
           </FormItem>
@@ -289,10 +287,13 @@ function renderColumn(
     } else if (input) {
       const { placeholder = '请输入' } = input
       node = ({ row, $index }) => (
-        // @ts-ignore
         <FormItem prop={formTableProp($index, prop)} {...mergeProps(formItem)}>
-          {/*  @ts-ignore */}
-          <Input clearable v-model={row[prop]} placeholder={placeholder} {...mergeProps(input)} />
+          <Input 
+            clearable 
+            v-model={row[prop]} 
+            placeholder={placeholder} 
+            {...mergeProps(input)} 
+          />
         </FormItem>
       )
     } else if (select) {
@@ -300,10 +301,14 @@ function renderColumn(
       node = ({ row, $index }) => {
         // const options = typeof opts === 'function' ? opts(args) : opts
         return (
-          // @ts-ignore
           <FormItem prop={formTableProp($index, prop)} {...mergeProps(formItem)}>
-            {/* @ts-ignore */}
-            <Select clearable v-model={row[prop]} placeholder={placeholder} {...mergeProps(select)}>
+            <Select
+              clearable
+              v-model={row[prop]}
+              placeholder={placeholder}
+              {...mergeProps(select)}
+            >
+              {/* @ts-ignore */}
               {options.map(option => <Option {...{ props: option, ...option }} />)}
             </Select>
           </FormItem>
