@@ -21,8 +21,15 @@ import type { ElTableColumn } from 'element-ui/types/table-column'
 import type { OptionRecord, JSX_ELEMENT } from '../types'
 
 // ## 设计原则
-// 1. jsx 属性最终兼容 import('vue').VNodeData
-// 2. props.data、props.pagination 设计为单向数据流
+// - jsx 属性最终兼容 import('vue').VNodeData
+// - 只有扩展属性可以写到 “顶级”，其余属性需遵循 import('vue').VNodeData
+// - 大部分情况下组件属性写在 props 中，少数情况如 Input 需要写在 attrs 中是因为 props 需要留给原生 input
+
+// ## 简而言之
+// - 事件写在 on 中
+// - 自定义属性写在顶级
+// - element-ui 组件属性写在 props 中
+// - element-ui 组件属性写在 props 中不生效写在 attrs 中
 
 const Tooltip = { ...ElementTooltip }
 // 屏蔽 Tooltip.content 传入组件警告
@@ -30,15 +37,30 @@ const Tooltip = { ...ElementTooltip }
 Tooltip.props.content.type = [String, Object]
 
 export interface TableProps<RowType = Record<PropertyKey, any>> extends Partial<ElTable>, VNodeData {
+  /** @override */
+  props?: Partial<ElTable>,
   columns: (Partial<ElTableColumn> & {
-    formItem?: Partial<ElFormItem> & VNodeData & {
-      input?: Partial<ElInput> & VNodeData
-      select?: Partial<ElSelect> & VNodeData & { options: (OptionRecord & VNodeData & Partial<ElOption>)[] }
+    /** @override */
+    props?: Partial<ElTableColumn>,
+    formItem?: VNodeData & {
+      /** @override */
+      props?: Partial<ElFormItem>,
+      input?: VNodeData & {
+        /** @override */
+        attrs?: Partial<ElInput>
+      }
+      select?: VNodeData & {
+        /** @override */
+        props?: Partial<ElSelect>
+        options: (OptionRecord & VNodeData & Partial<ElOption>)[]
+      }
       // render props(小)
       render?: (args: ({ key: string } & Parameters<TableColumn<RowType>['render']>[0])) => JSX_ELEMENT
     }
 
-    tooltip?: Partial<ElTooltip> & VNodeData & {
+    tooltip?: VNodeData & {
+      /** @override */
+      props?: Partial<ElTooltip>
       /** 自定义渲染 content 支持 JSX.Element */
       render?: TableColumn<RowType>['render']
     }
@@ -66,7 +88,10 @@ export interface TableProps<RowType = Record<PropertyKey, any>> extends Partial<
     pageSize: number
     /** Total item count */
     total: number
-    /** import('vue').VNodeData & import('element-ui/types/pagination').ElPagination */
+    /**
+     * @type {import('vue').VNodeData & import('element-ui/types/pagination').ElPagination}
+     * TableProps['pagination'] 算扩展属性不打算显示的标注 ElPagination 类型降低心智负担，但支持全部 ElPagination。
+     */
     [key: string]: any
   }
   handle?: {
@@ -83,6 +108,7 @@ export type TableHandle<RowType = Record<PropertyKey, any>> = TableProps<RowType
 
 const name = 'hb-ui-form-table'
 // 这里与 export default 类型并不匹配，Vue2 提供的 ts 并不完整
+// props.data, props.pagination 设计为单向数据流
 const TableElementUI: Component<
   () => {
     loading: boolean,
@@ -130,14 +156,14 @@ const TableElementUI: Component<
     this.queryHandle()
   },
   watch: {
-    data: {
+    '$props.data': {
       handler(d) {
         // 合并传入参数
         d && (this.formModel.tableData = d)
       },
       immediate: true,
     },
-    pagination: {
+    '$props.pagination': {
       handler(pagination) {
         // 合并传入参数
         pagination !== undefined && (this.pagination2 = pagination)
@@ -201,19 +227,23 @@ const TableElementUI: Component<
             v-loading={this.loading}
             data={this.formModel.tableData}
             // [Vue warn]: Error in mounted hook: "Error: please transfer a valid prop path to form item!"
-            {...mergeProps(props)}
+            {...mergeProps(props, {
+              // `data` has been extracted in `watch` hook
+              props: CP.Table.props.filter(p => p !== 'data'),
+            })}
           >
-            {props.columns.map((column, index, columns) => (
-              // 1. 修复 type=selection 复选排版错位 BUG
-              // 2. 修复 type=other 更加可控的渲染
-              column.type
-                ? <ElementTableColumn {...{ props: column }}>{column.render}</ElementTableColumn>
-                : <ElementTableColumn
-                  {...{ props: withAutoFixed({ column, index, columns }) }}
-                >
-                  {renderColumn.call(_this, this.$refs[name], column, index)}
-                </ElementTableColumn>
-            ))}
+            {props.columns?.map((column, index, columns) => {
+              column = mergeProps(column, { props: CP.TableColumn.props })
+              return (
+                // 1. 修复 type=selection 复选排版错位 BUG
+                // 2. 修复 type=other 更加可控的渲染
+                column.type
+                  ? <ElementTableColumn {...column as any}>{column.render}</ElementTableColumn>
+                  : <ElementTableColumn {...withAutoFixed({ column, index, columns }) as any}>
+                    {renderColumn.call(_this, this.$refs[name], column, index)}
+                  </ElementTableColumn>
+              )
+            })}
           </ElementTable>
         </Form>
         {props.pagination !== null && <Pagination
@@ -226,7 +256,7 @@ const TableElementUI: Component<
           total={this.pagination2.total}
           on-current-change={this.onCurrentChange}
           on-size-change={this.onSizeChange}
-          {...mergeProps(props.pagination)}
+          {...mergeProps(props.pagination, { props: CP.Pagination.props })}
         />}
       </div>
     )
@@ -273,43 +303,42 @@ function renderColumn(
       input,
       select,
     } = formItem
+    const mergedFormItem = mergeProps(formItem, { props: CP.FormItem.props })
 
     if (render) {
       // 自定义 FormItem 内组件
       node = args => {
         const key = formTableProp(args.$index, prop)
         return (
-          <FormItem prop={key} {...mergeProps(formItem)}>
+          <FormItem prop={key} {...mergedFormItem}>
             {render({ ...args, key })}
           </FormItem>
         )
       }
     } else if (input) {
-      const { placeholder = '请输入' } = input
       node = ({ row, $index }) => (
-        <FormItem prop={formTableProp($index, prop)} {...mergeProps(formItem)}>
+        <FormItem prop={formTableProp($index, prop)} {...mergedFormItem}>
           <Input 
             clearable 
             v-model={row[prop]} 
-            placeholder={placeholder} 
-            {...mergeProps(input)} 
+            placeholder='请输入'
+            {...mergeProps(input, { props: CP.Input.props, attrs: CP.Input.props })}
           />
         </FormItem>
       )
     } else if (select) {
-      const { options, placeholder = '请选择' } = select
       node = ({ row, $index }) => {
         // const options = typeof opts === 'function' ? opts(args) : opts
         return (
-          <FormItem prop={formTableProp($index, prop)} {...mergeProps(formItem)}>
+          <FormItem prop={formTableProp($index, prop)} {...mergedFormItem}>
             <Select
               clearable
               v-model={row[prop]}
-              placeholder={placeholder}
-              {...mergeProps(select)}
+              placeholder='请选择'
+              {...mergeProps(select, { props: CP.Select.props })}
             >
               {/* @ts-ignore */}
-              {options.map(option => <Option {...{ props: option, ...option }} />)}
+              {select.options?.map(option => <Option {...mergeProps(option, { props: CP.Option.props })} />)}
             </Select>
           </FormItem>
         )
@@ -366,15 +395,14 @@ function withTooltip(
   // 编译后的 jsx 需要使用 h 函数
   const h = this.$createElement
   const style = 'overflow:hidden; text-overflow:ellipsis; white-space:nowrap;'
-  const { placement = 'top' } = tooltip
 
   return (obj: Parameters<TableColumn['render']>[0]) => {
     let n = ensureNodeValueVNode.call(this, render(obj))
     // @ts-ignore
     n = <Tooltip
-      placement={placement}
+    placement={tooltip.props?.placement ?? 'top'}
       content={tooltip.render ? tooltip.render(obj) : obj.row[column.prop]}
-      {...mergeProps(tooltip)}
+      {...mergeProps(tooltip, { props: CP.Tooltip.props })}
     >
       <div style={style}>{n}</div>
     </Tooltip>
@@ -395,12 +423,276 @@ function formTableProp($index: number, prop: string) {
   return `tableData.${$index}.${prop}`
 }
 
-// TODO: element-ui 属性按照 VNodeData 分类
-// https://zhuanlan.zhihu.com/p/37920151
-// https://github.com/vuejs/babel-helper-vue-jsx-merge-props/blob/master/index.js
-// https://github.com/vuejs/babel-plugin-transform-vue-jsx/blob/HEAD/lib/group-props.js
-function mergeProps(props?: Record<PropertyKey, any>): Record<PropertyKey, any> {
-  return props
+/**
+ * 🌱 将 element-ui 属性提升到顶级
+ * @see https://zhuanlan.zhihu.com/p/37920151
+ * @see https://github.com/vuejs/babel-helper-vue-jsx-merge-props/blob/master/index.js
+ * @see https://github.com/vuejs/babel-plugin-transform-vue-jsx/blob/HEAD/lib/group-props.js
+ */
+ function mergeProps<T = any>(target: T, props: Partial<Record<keyof VNodeData, string[]>>) {
+  if (!target) return target
+  for (const [prop, keys] of Object.entries(props)) {
+    if (!target[prop]) target[prop] = {}
+    for (const key of keys) {
+      if (target[prop][key] === undefined && target[key] !== undefined) {
+        target[prop][key] = target[key]
+      }
+    }
+  }
+  return target as any
+}
+
+/** Component props */
+const CP: Record<string, { props: string[]; on: string[]; }> = {
+  Form: {
+    props: [
+      'model',
+      'rules',
+      'inline',
+      'disabled',
+      'labelPosition',
+      'labelWidth',
+      'showMessage',
+      'inlineMessage',
+      'statusIcon',
+      'validateOnRuleChange',
+      'size',
+    ],
+    on: [
+      'validate',
+      'validate',
+      'validateField',
+      'resetFields',
+      'clearValidate',
+    ]
+  },
+  FormItem: {
+    props: [
+      'prop',
+      'label',
+      'labelWidth',
+      'required',
+      'rules',
+      'error',
+      'showMessage',
+      'inlineMessage',
+      'size',
+    ],
+    on: [
+      'resetField',
+      'clearValidate',
+    ]
+  },
+  Input: {
+    props: [
+      'type',
+      'value',
+      'maxlength',
+      'minlength',
+      'placeholder',
+      'disabled',
+      'size',
+      'prefixIcon',
+      'suffixIcon',
+      'rows',
+      'autosize',
+      'autoComplete',
+      'autocomplete',
+      'name',
+      'readonly',
+      'max',
+      'min',
+      'step',
+      'resize',
+      'autofocus',
+      'form',
+      'validateEvent',
+      'clearable',
+      'showPassword',
+      'showWordLimit',
+    ],
+    on: [
+      'focus',
+      'blur',
+      'select',
+    ],
+  },
+  Select: {
+    props: [
+      'value',
+      'multiple',
+      'disabled',
+      'valueKey',
+      'size',
+      'clearable',
+      'multipleLimit',
+      'autoComplete',
+      'autocomplete',
+      'name',
+      'placeholder',
+      'filterable',
+      'allowCreate',
+      'filterMethod',
+      'remote',
+      'remoteMethod',
+      'loading',
+      'loadingText',
+      'noMatchText',
+      'noDataText',
+      'popperClass',
+      'defaultFirstOption',
+      'popperAppendToBody',
+    ],
+    on: [
+      'focus',
+      'blur',
+    ],
+  },
+  Option: {
+    props: [
+      'value',
+      'label',
+      'disabled',
+    ],
+    on: [],
+  },
+  DatePicker: {
+    props: [
+      'value',
+      'readonly',
+      'disabled',
+      'size',
+      'editable',
+      'clearable',
+      'placeholder',
+      'startPlaceholder',
+      'endPlaceholder',
+      'type',
+      'format',
+      'align',
+      'popperClass',
+      'pickerOptions',
+      'rangeSeparator',
+      'defaultValue',
+      'valueFormat',
+      'name',
+    ],
+    on: [
+      'focus',
+    ]
+  },
+  Table: {
+    props: [
+      'data',
+      'height',
+      'maxHeight',
+      'stripe',
+      'border',
+      'fit',
+      'showHeader',
+      'highlightCurrentRow',
+      'currentRowKey',
+      'lazy',
+      'indent',
+      'rowClassName',
+      'rowStyle',
+      'cellClassName',
+      'cellStyle',
+      'headerRowClassName',
+      'headerRowStyle',
+      'headerCellClassName',
+      'headerCellStyle',
+      'rowKey',
+      'emptyText',
+      'defaultExpandAll',
+      'expandRowKeys',
+      'defaultSort',
+      'tooltipEffect',
+      'showSummary',
+      'sumText',
+      'summaryMethod',
+      'selectOnIndeterminate',
+    ],
+    on: [
+      'clearSelection',
+      'toggleRowSelection',
+      'toggleAllSelection',
+      'setCurrentRow',
+      'toggleRowExpansion',
+      'clearSort',
+      'clearFilter',
+      'doLayout',
+      'sort',
+      'load',
+    ],
+  },
+  TableColumn: {
+    props: [
+      'type',
+      'label',
+      'columnKey',
+      'prop',
+      'width',
+      'minWidth',
+      'fixed',
+      'renderHeader',
+      'sortable',
+      'sortMethod',
+      'sortOrders',
+      'resizable',
+      'formatter',
+      'showOverflowTooltip',
+      'align',
+      'headerAlign',
+      'className',
+      'labelClassName',
+      'selectable',
+      'reserveSelection',
+      'filters',
+      'filterPlacement',
+      'filterMultiple',
+      'filterMethod',
+      'filteredValue',
+    ],
+    on: [],
+  },
+  Pagination: {
+    props: [
+      'small',
+      'pageSize',
+      'total',
+      'pageCount',
+      'pagerCount',
+      'currentPage',
+      'layout',
+      'pageSizes',
+      'popperClass',
+      'prevText',
+      'nextText',
+      'hideOnSinglePage',
+    ],
+    on: [],
+  },
+  Tooltip: {
+    props: [
+      'effect',
+      'content',
+      'placement',
+      'value',
+      'disabled',
+      'offset',
+      'transition',
+      'visibleArrow',
+      'popperOptions',
+      'openDelay',
+      'manual',
+      'popperClass',
+      'enterable',
+      'hideAfter',
+      'tabindex',
+    ],
+    on: [],
+  },
 }
 
 // TODO: @vue/composition-api 中返回的是 VueProxy
