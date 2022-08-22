@@ -44,7 +44,6 @@ npm run build
 ## 组件
 
 - 🤖 推荐将项目 clone 到本地，然后执行 `npm run dev` 看实际效果
-- 🚨 推荐使用 `tsx` or `jsx`
 - 🐢 [在线运行 - StackBlitz](https://stackblitz.com/edit/hb-ui-element-ui)
 
 #### Form
@@ -64,10 +63,20 @@ export default {
      * @type {import('@hb-ui/element-ui').FormProps}
      */
     const formProps: FormProps = {
-      // Form config
+      // 组件属性、element-ui 属性
+      items: [
+        {
+          label: '名称',
+          name: 'name',
+        },
+      ],
+      // element-ui 事件
+      on: {
+        validate(prop) { },
+      },
     }
   
-    return <Form {...{ props: formProps }} />
+    return <Form $porps={formProps} />
   },
 }
 ```
@@ -91,10 +100,33 @@ export default {
      * @type {import('@hb-ui/element-ui').TableProps}
      */
     const tableProps: TableProps = {
-      // Table config
+      // 组件属性、element-ui 属性
+      columns: [
+        {
+          label: '名称',
+          prop: 'name',
+        },
+      ],
+      // element-ui 事件
+      on: {
+        'selection-change'(rows) { },
+      },
     }
   
-    return <Table {...{ props: tableProps }} />
+    return <Table $props={tableProps} />
   },
 }
 ```
+
+---
+
+## 设计原则
+
+- 组件强烈推荐使用 tsx、jsx。不妨先看看这篇文章 👉 [在Vue中使用JSX的正确姿势](https://zhuanlan.zhihu.com/p/37920151)
+- jsx 属性最终兼容 `import('vue').VNodeData`
+- 属性分类
+  1. 组件属性             - 写在顶级
+  2. element-ui 属性     - 写在顶级
+  3. element-ui 事件     - 写在 on
+  4. html、vue 属性、事件 - 写在标签
+  

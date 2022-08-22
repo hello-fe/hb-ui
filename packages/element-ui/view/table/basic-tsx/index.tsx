@@ -83,7 +83,7 @@ const TableTsx: Component = {
       // 关闭分页
       // pagination: null,
       style: 'color: #fa6470',
-      props: { border: true },
+      border: true ,
       on: {
         'selection-change'(rows) {
           console.log('rows:', rows)

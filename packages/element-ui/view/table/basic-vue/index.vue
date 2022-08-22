@@ -1,8 +1,8 @@
 <template>
   <div>
-    <hb-ui-table :$props="tableProps">
+    <hb-ui-form-table :$props="tableProps">
       <!-- TODO: slot -->
-    </hb-ui-table>
+    </hb-ui-form-table>
   </div>
 </template>
 
@@ -22,7 +22,7 @@ export interface RowType {
 
 export default {
   components: {
-    // hb-ui-table | 你可以换成其他名称
+    // hb-ui-form-table | 你可以换成其他名称
     [Table.name]: Table,
   },
   data() {
