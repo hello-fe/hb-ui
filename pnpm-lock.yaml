@@ -55,6 +55,12 @@ importers:
       vue-router: 3.5.4
       vue-template-compiler: 2.6.14
 
+  packages/utils:
+    specifiers:
+      typescript: ~4.7.4
+    devDependencies:
+      typescript: 4.7.4
+
 packages:
 
   /@ampproject/remapping/2.2.0:

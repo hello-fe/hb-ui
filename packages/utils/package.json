@@ -1,0 +1,23 @@
+{
+  "name": "@hb-ui/utils",
+  "version": "0.1.0",
+  "packageManager": "pnpm@7.0.0",
+  "description": "一些常用的工具方法",
+  "main": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hello-fe/hb-ui.git",
+    "directory": "packages/utils"
+  },
+  "scripts": {
+    "build": "rm -rf es && tsc --project tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "typescript": "~4.7.4"
+  },
+  "files": [
+    "*/*.d.ts",
+    "*/*.js"
+  ]
+}
