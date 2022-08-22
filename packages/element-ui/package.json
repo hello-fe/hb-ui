@@ -18,6 +18,7 @@
   "devDependencies": {
     "@babel/core": "~7.18.9",
     "@babel/plugin-transform-typescript": "~7.18.8",
+    "@vue/babel-helper-vue-jsx-merge-props": "1.2.1",
     "@vue/babel-preset-app": "~5.0.8",
     "chalk": "~5.0.1",
     "element-ui": "~2.15.9",
