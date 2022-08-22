@@ -51,10 +51,10 @@ export interface TableProps<RowType = Record<PropertyKey, any>> extends Partial<
       render?: (args: ({ key: string } & Parameters<TableColumn<RowType>['render']>[0])) => JSX_ELEMENT
     }
 
-    tooltip?: Partial<ElTooltip & {
+    tooltip?: Partial<ElTooltip> & VNodeData & {
       /** 自定义渲染 content 支持 JSX.Element */
-      render: TableColumn<RowType>['render']
-    }>
+      render?: TableColumn<RowType>['render']
+    }
     render?: (props: {
       $index: number
       /** 当前列属性 */
@@ -79,8 +79,8 @@ export interface TableProps<RowType = Record<PropertyKey, any>> extends Partial<
     pageSize: number
     /** Total item count */
     total: number
-    /** 泛化 */
-    props?: Partial<ElPagination & Record<PropertyKey, any>>
+    /** import('vue').VNodeData */
+    [key: string]: any
   }
   handle?: {
     query: (args?: Omit<Parameters<TableQuery<RowType>>[0], 'count'>) => void
@@ -213,6 +213,7 @@ const TableElementUI: Component<
           <ElementTable
             v-loading={this.loading}
             data={this.formModel.tableData}
+            // [Vue warn]: Error in mounted hook: "Error: please transfer a valid prop path to form item!"
             {...mergeProps(props)}
           >
             {props.columns.map((column, index, columns) => (
@@ -316,7 +317,7 @@ function renderColumn(
           <FormItem prop={formTableProp($index, prop)} {...mergeProps(formItem)}>
             {/* @ts-ignore */}
             <Select clearable v-model={row[prop]} placeholder={placeholder} {...mergeProps(select)}>
-              {options.map(option => <Option {...mergeProps(option)} />)}
+              {options.map(option => <Option {...{ props: option, ...option }} />)}
             </Select>
           </FormItem>
         )
@@ -402,44 +403,12 @@ function formTableProp($index: number, prop: string) {
   return `tableData.${$index}.${prop}`
 }
 
-// 合并 VNodeData
+// TODO: element-ui 属性按照 VNodeData 分类
+// https://zhuanlan.zhihu.com/p/37920151
+// https://github.com/vuejs/babel-helper-vue-jsx-merge-props/blob/master/index.js
+// https://github.com/vuejs/babel-plugin-transform-vue-jsx/blob/HEAD/lib/group-props.js
 function mergeProps(props?: Record<PropertyKey, any>): Record<PropertyKey, any> {
-  // props、attrs 提升到顶级
-  const merged: VNodeData = {
-    props: { ...props, ...props?.props },
-    attrs: { ...props, ...props?.attrs },
-  }
-  const keys = [
-    'key',
-    'slot',
-    'scopedSlots',
-    'ref',
-    'refInFor',
-    'tag',
-    'staticClass',
-    'class',
-    'staticStyle',
-    'style',
-    'props',
-    'attrs',
-    'domProps',
-    'hook',
-    'on',
-    'nativeOn',
-    'transition',
-    'show',
-    'inlineTemplate',
-    'directives',
-    'keepAlive',
-  ]
-
-  for (const key of keys) {
-    if (Object.keys(merged).includes(key)) continue
-    if (!props?.[key]) continue
-    merged[key] = props[key]
-  }
-
-  return merged
+  return props
 }
 
 // TODO: @vue/composition-api 中返回的是 VueProxy
