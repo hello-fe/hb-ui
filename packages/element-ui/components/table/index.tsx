@@ -1,4 +1,4 @@
-import type { Component } from 'vue'
+import type { Component, VNodeData } from 'vue'
 import {
   Form,
   FormItem,
@@ -22,26 +22,33 @@ import type { ElPagination } from 'element-ui/types/pagination'
 import type { OptionRecord, JSX_ELEMENT } from '../types'
 
 /**
- * props.data、props.pagination 设计为单向数据流
+ * TODO:
+ * 1. edit-table FromItem.prop 报错
+ *    [Vue warn]: Error in mounted hook: "Error: please transfer a valid prop path to form item!"
  */
 
-// TODO: 🚧 input、select 等支持事件的组件参数需要重新设计 (参考 Table)
+// ## 设计原则
+// 1. jsx 属性最终兼容 import('vue').VNodeData
+// 2. props.data、props.pagination 设计为单向数据流
+
+// ## 属性分类
+// 1. 组件属性             - 写在顶级
+// 2. element-ui 属性     - 写在顶级
+// 3. element-ui 事件     - 写在 on
+// 4. html、vue 属性、事件 - 写在标签
 
 const Tooltip = { ...ElementTooltip }
 // 屏蔽 Tooltip.content 传入组件警告
 // @ts-ignore
 Tooltip.props.content.type = [String, Object]
 
-export interface TableProps<RowType = Record<PropertyKey, any>> extends Partial<ElTable>, Record<PropertyKey, any> {
-  columns: (Partial<ElTableColumn> & Record<PropertyKey, any> & {
-    formItem?: Partial<ElFormItem> & {
-      input?: Partial<ElInput>
-      select?: Partial<ElSelect> & {
-        options:
-        | (OptionRecord & Partial<ElOption>)[]
-        | ((...args: Parameters<TableColumn<RowType>['render']>) => (OptionRecord & Partial<ElOption>)[])
-      }
-      // TODO: 其他 Form 元素
+export interface TableProps<RowType = Record<PropertyKey, any>> extends Partial<ElTable>, VNodeData {
+  columns: (Partial<ElTableColumn> & {
+    formItem?: Partial<ElFormItem> & VNodeData & {
+      input?: Partial<ElInput> & VNodeData
+      select?: Partial<ElSelect> & VNodeData & { options: (OptionRecord & VNodeData & Partial<ElOption>)[] }
+      // render props(小)
+      render?: (args: ({ key: string } & Parameters<TableColumn<RowType>['render']>[0])) => JSX_ELEMENT
     }
 
     tooltip?: Partial<ElTooltip & {
@@ -87,6 +94,7 @@ export type TableQuery<RowType = Record<PropertyKey, any>> = TableProps<RowType>
 export type TablePagination = Pick<TableProps['pagination'], 'currentPage' | 'pageSize' | 'total'>
 export type TableHandle<RowType = Record<PropertyKey, any>> = TableProps<RowType>['handle']
 
+const name = 'hb-ui-form-table'
 // 这里与 export default 类型并不匹配，Vue2 提供的 ts 并不完整
 const TableElementUI: Component<
   () => {
@@ -104,7 +112,7 @@ const TableElementUI: Component<
   Record<PropertyKey, any>,
   { $props: TableProps }
 > = {
-  name: 'hb-ui-table',
+  name,
   data() {
     return {
       loading: false,
@@ -116,15 +124,20 @@ const TableElementUI: Component<
     }
   },
   props: {
-    $props: Object as unknown as TableProps,
+    $props: {
+      // @ts-ignore
+      type: Object,
+      default: () => ({}),
+    },
   },
   mounted() {
     const props = this.$props as TableProps
     this.queryCount = 0
 
+    // handle 挂载
     if (props.handle) {
       props.handle.query = this.queryHandle
-      props.handle.form = this.$refs['hb-ui-table-form'] as ElForm
+      props.handle.form = this.$refs[name] as ElForm
     }
 
     this.queryHandle()
@@ -189,20 +202,18 @@ const TableElementUI: Component<
   render() {
     const _this = Object.assign(this, { $createElement: arguments[0] })
     const props = this.$props as TableProps
-    const { columns: _c, data: _d, on: onTable, ...restTable } = props
 
     return (
-      <div class="hb-ui-table">
+      <div class={name}>
         <Form
-          // @ts-ignore
-          ref="hb-ui-table-form"
+          ref={name}
           // https://github.com/ElemeFE/element/issues/20286
           {...{ props: { model: this.formModel } } as any}
         >
           <ElementTable
             v-loading={this.loading}
             data={this.formModel.tableData}
-            {...restTable}
+            {...mergeProps(props)}
           >
             {props.columns.map((column, index, columns) => (
               // 1. 修复 type=selection 复选排版错位 BUG
@@ -212,7 +223,7 @@ const TableElementUI: Component<
                 : <ElementTableColumn
                   {...{ props: withAutoFixed({ column, index, columns }) }}
                 >
-                  {renderColumn.call(_this, column, index)}
+                  {renderColumn.call(_this, this.$refs[name], column, index)}
                 </ElementTableColumn>
             ))}
           </ElementTable>
@@ -228,14 +239,12 @@ const TableElementUI: Component<
           total={this.pagination2.total}
           on-current-change={this.onCurrentChange}
           on-size-change={this.onSizeChange}
-          {...{ props: props.pagination?.props }}
+          {...mergeProps(props.pagination)}
         />}
       </div>
     )
   }
 }
-
-function noop() { }
 
 // 最后一列如果是 "操作" 自动右侧固定
 function withAutoFixed(args: {
@@ -252,7 +261,11 @@ function withAutoFixed(args: {
 }
 
 // 渲染表格单元格，如果返回值是 Function 那么相当于 Vue 的 slot
-function renderColumn(column: TableColumn, index: number) {
+function renderColumn(
+  handle: ElForm,
+  column: TableColumn, 
+  index: number
+) {
   // 编译后的 jsx 需要使用 h 函数
   const h = this.$createElement
   const {
@@ -265,38 +278,45 @@ function renderColumn(column: TableColumn, index: number) {
   // 🤔 The `node` should always be render-function
   let node: TableColumn['render']
 
-  if (typeof render === 'function') {
+  if (render) {
     node = render
-  } else if (typeof formItem === 'object') {
+  } else if (formItem) {
     const {
+      render,
       input,
       select,
-      ...restFormItem
     } = formItem
 
-    if (typeof input === 'object') {
-      // @ts-ignore
-      const { placeholder = '请输入', on: onInput, ...restInput } = input
-      node = ({ row, $index }) => (
-        // @ts-ignore
-        <FormItem prop={formTableProp($index, prop)} {...{ props: restFormItem }}>
-          {/*  @ts-ignore */}
-          <Input clearable v-model={row[prop]} placeholder={placeholder} {...{ props: restInput, on: onInput }} />
-        </FormItem>
-      )
-    } else if (typeof select === 'object') {
-      // @ts-ignore
-      const { options: opts, placeholder = '请选择', on: onSelect, ...restSelect } = select
+    if (render) {
+      // 自定义 FormItem 内组件
       node = args => {
-        const { row, $index } = args
-        const options = typeof opts === 'function' ? opts(args) : opts
+        const key = formTableProp(args.$index, prop)
         return (
           // @ts-ignore
-          <FormItem prop={formTableProp($index, prop)} {...{ props: restFormItem }}>
+          <FormItem prop={key} {...mergeProps(formItem)}>
+            {render({ ...args, key })}
+          </FormItem>
+        )
+      }
+    } else if (input) {
+      const { placeholder = '请输入' } = input
+      node = ({ row, $index }) => (
+        // @ts-ignore
+        <FormItem prop={formTableProp($index, prop)} {...mergeProps(formItem)}>
+          {/*  @ts-ignore */}
+          <Input clearable v-model={row[prop]} placeholder={placeholder} {...mergeProps(input)} />
+        </FormItem>
+      )
+    } else if (select) {
+      const { options, placeholder = '请选择' } = select
+      node = ({ row, $index }) => {
+        // const options = typeof opts === 'function' ? opts(args) : opts
+        return (
+          // @ts-ignore
+          <FormItem prop={formTableProp($index, prop)} {...mergeProps(formItem)}>
             {/* @ts-ignore */}
-            <Select clearable v-model={row[prop]} placeholder={placeholder} {...{ props: restSelect, on: onSelect }}>
-              {/* @ts-ignore */}
-              {options.map((opt, idx) => <Option key={idx} {...{ props: opt }} />)}
+            <Select clearable v-model={row[prop]} placeholder={placeholder} {...mergeProps(select)}>
+              {options.map(option => <Option {...mergeProps(option)} />)}
             </Select>
           </FormItem>
         )
@@ -309,13 +329,13 @@ function renderColumn(column: TableColumn, index: number) {
     node = ({ row }) => <span>{row[prop]}</span>
   }
 
-  // 前两列可以点击(第一列有时候是选框)
-  if (index <= 1) {
+  // 第一点击 log (TODO: 第一列是选框)
+  if (index <= 0) {
     node = withClickColumnLog.call(this, node)
   }
 
   // Wrapped <Tooltip/>
-  if (typeof tooltip === 'object') {
+  if (tooltip) {
     node = withTooltip.call(this, column, node, tooltip)
   }
 
@@ -353,7 +373,7 @@ function withTooltip(
   // 编译后的 jsx 需要使用 h 函数
   const h = this.$createElement
   const style = 'overflow:hidden; text-overflow:ellipsis; white-space:nowrap;'
-  const { placement = 'top', ...rest } = tooltip
+  const { placement = 'top' } = tooltip
 
   return (obj: Parameters<TableColumn['render']>[0]) => {
     let n = ensureNodeValueVNode.call(this, render(obj))
@@ -361,7 +381,7 @@ function withTooltip(
     n = <Tooltip
       placement={placement}
       content={tooltip.render ? tooltip.render(obj) : obj.row[column.prop]}
-      {...{ props: rest }}
+      {...mergeProps(tooltip)}
     >
       <div style={style}>{n}</div>
     </Tooltip>
@@ -378,7 +398,48 @@ function ensureNodeValueVNode(node: JSX_ELEMENT, tag = 'span') {
 
 function formTableProp($index: number, prop: string) {
   // 🚧-①: 格式必须是 data.index.prop | data[index]prop 无效
+  // https://github.com/ElemeFE/element/issues/12859#issuecomment-423838039
   return `tableData.${$index}.${prop}`
+}
+
+// 合并 VNodeData
+function mergeProps(props?: Record<PropertyKey, any>): Record<PropertyKey, any> {
+  // props、attrs 提升到顶级
+  const merged: VNodeData = {
+    props: { ...props, ...props?.props },
+    attrs: { ...props, ...props?.attrs },
+  }
+  const keys = [
+    'key',
+    'slot',
+    'scopedSlots',
+    'ref',
+    'refInFor',
+    'tag',
+    'staticClass',
+    'class',
+    'staticStyle',
+    'style',
+    'props',
+    'attrs',
+    'domProps',
+    'hook',
+    'on',
+    'nativeOn',
+    'transition',
+    'show',
+    'inlineTemplate',
+    'directives',
+    'keepAlive',
+  ]
+
+  for (const key of keys) {
+    if (Object.keys(merged).includes(key)) continue
+    if (!props?.[key]) continue
+    merged[key] = props[key]
+  }
+
+  return merged
 }
 
 // TODO: @vue/composition-api 中返回的是 VueProxy
