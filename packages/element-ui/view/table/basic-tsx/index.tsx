@@ -86,6 +86,10 @@ const TableTsx: Component = {
       props: {
         border: true,
       },
+      // kebab-case
+      // 'show-summary': true,
+      // camelCase
+      // 'showSummary': true,
       on: {
         'selection-change'(rows) {
           console.log('rows:', rows)
