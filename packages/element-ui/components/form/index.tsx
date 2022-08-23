@@ -295,7 +295,9 @@ function mergeProps<T = any>(target: T, props: Partial<Record<keyof VNodeData, s
   for (const [prop, keys] of Object.entries(props)) {
     if (!target[prop]) target[prop] = {}
     for (const key of keys) {
-      if (target[prop][key] === undefined && target[key] !== undefined) {
+      // kebab-case -> camelCase
+      const key2 = key.split('-').map((str, i) => i === 0 ? str : str[0].toUpperCase() + str.slice(1)).join('')
+      if (target[prop][key] === undefined && (target[key] !== undefined || target[key2] !== undefined)) {
         target[prop][key] = target[key]
       }
     }

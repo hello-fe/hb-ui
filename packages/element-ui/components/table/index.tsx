@@ -280,7 +280,7 @@ function withAutoFixed(args: {
 // 渲染表格单元格，如果返回值是 Function 那么相当于 Vue 的 slot
 function renderColumn(
   handle: ElForm,
-  column: TableColumn, 
+  column: TableColumn,
   index: number
 ) {
   // 编译后的 jsx 需要使用 h 函数
@@ -318,9 +318,9 @@ function renderColumn(
     } else if (input) {
       node = ({ row, $index }) => (
         <FormItem prop={formTableProp($index, prop)} {...mergedFormItem}>
-          <Input 
-            clearable 
-            v-model={row[prop]} 
+          <Input
+            clearable
+            v-model={row[prop]}
             placeholder='请输入'
             {...mergeProps(input, { props: CP.Input.props, attrs: CP.Input.props })}
           />
@@ -400,7 +400,7 @@ function withTooltip(
     let n = ensureNodeValueVNode.call(this, render(obj))
     // @ts-ignore
     n = <Tooltip
-    placement={tooltip.props?.placement ?? 'top'}
+      placement={tooltip.props?.placement ?? 'top'}
       content={tooltip.render ? tooltip.render(obj) : obj.row[column.prop]}
       {...mergeProps(tooltip, { props: CP.Tooltip.props })}
     >
@@ -429,12 +429,14 @@ function formTableProp($index: number, prop: string) {
  * @see https://github.com/vuejs/babel-helper-vue-jsx-merge-props/blob/master/index.js
  * @see https://github.com/vuejs/babel-plugin-transform-vue-jsx/blob/HEAD/lib/group-props.js
  */
- function mergeProps<T = any>(target: T, props: Partial<Record<keyof VNodeData, string[]>>) {
+function mergeProps<T = any>(target: T, props: Partial<Record<keyof VNodeData, string[]>>) {
   if (!target) return target
   for (const [prop, keys] of Object.entries(props)) {
     if (!target[prop]) target[prop] = {}
     for (const key of keys) {
-      if (target[prop][key] === undefined && target[key] !== undefined) {
+      // kebab-case -> camelCase
+      const key2 = key.split('-').map((str, i) => i === 0 ? str : str[0].toUpperCase() + str.slice(1)).join('')
+      if (target[prop][key] === undefined && (target[key] !== undefined || target[key2] !== undefined)) {
         target[prop][key] = target[key]
       }
     }
