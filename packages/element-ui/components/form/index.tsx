@@ -67,7 +67,7 @@ export interface FormProps extends VNodeData {
   })
   | ((nodes: import('vue').VNode[], handle: ElForm) => JSX_ELEMENT) // render function(大)
   onSubmit?: (values: Record<PropertyKey, any>, handle: ElForm) => Promise<void | false> | void | false
-  onReset?: () => void
+  onReset?: FormProps['onSubmit']
   handle?: ElForm
   cache?: {
     key?: string,
@@ -141,19 +141,21 @@ const FormItemUI: Component<
       const props = this.$props as FormProps
       if (props.onSubmit) {
         const needCacheParams = await props.onSubmit(props.props.model, this.$refs[name])
-        // 🤔 阻止缓存
-        if (needCacheParams === false) return
-        if (this.cacheKey) cacheParams(this.cacheKey, props.props.model)
+        if (needCacheParams !== /* 🤔 阻止缓存 */false && this.cacheKey) {
+          cacheParams(this.cacheKey, props.props.model)
+        }
       }
     },
-    onFormReset() {
+    async onFormReset() {
       const props = this.$props as FormProps
       for (const k of Object.keys(props.props.model)) {
         props.props.model[k] = this.originalModel[k]
       }
       if (props.onReset) {
-        props.onReset()
-        if (this.cacheKey) cacheParams(this.cacheKey, props.props.model)
+        const needCacheParams = await props.onReset(props.props.model, this.$refs[name])
+        if (needCacheParams !== /* 🤔 阻止缓存 */false && this.cacheKey) {
+          cacheParams(this.cacheKey, props.props.model)
+        }
       }
     },
   },
