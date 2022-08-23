@@ -284,6 +284,27 @@ function renderFormItem(
   )
 }
 
+// https://stackoverflow.com/questions/1027224/how-can-i-test-if-a-letter-in-a-string-is-uppercase-or-lowercase-using-javascrip
+function convertLiteral(key: string) {
+  // kebab-case -> camelCase
+  const camel = key.split('-').map((str, i) => i === 0 ? str : str[0].toUpperCase() + str.slice(1)).join('')
+
+  // camelCase -> kebab-case
+  let i = 0
+  let kebab = ''
+  while (i <= key.length) {
+    const character = key.charAt(i)
+    if (character && character === character.toUpperCase()) {
+      kebab += `-${character.toLowerCase()}`
+    } else {
+      kebab += character
+    }
+    i++
+  }
+
+  return { camel, kebab }
+}
+
 /**
  * 🌱 将 element-ui 属性提升到顶级
  * @see https://zhuanlan.zhihu.com/p/37920151
@@ -295,10 +316,15 @@ function mergeProps<T = any>(target: T, props: Partial<Record<keyof VNodeData, s
   for (const [prop, keys] of Object.entries(props)) {
     if (!target[prop]) target[prop] = {}
     for (const key of keys) {
-      // kebab-case -> camelCase
-      const key2 = key.split('-').map((str, i) => i === 0 ? str : str[0].toUpperCase() + str.slice(1)).join('')
-      if (target[prop][key] === undefined && (target[key] !== undefined || target[key2] !== undefined)) {
-        target[prop][key] = target[key] || target[key2]
+      const { camel, kebab } = convertLiteral(key)
+      const targetPropKeys = Object.keys(target[prop])
+      const targetKeys = Object.keys(target)
+      if (!targetPropKeys.includes(camel) && !targetPropKeys.includes(kebab)) {
+        if (targetKeys.includes(camel)) {
+          target[prop][camel] = target[camel]
+        } else if (targetKeys.includes(kebab)) {
+          target[prop][kebab] = target[kebab]
+        }
       }
     }
   }
