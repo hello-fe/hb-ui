@@ -14,15 +14,15 @@ export function readFile(options: { input?: Partial<HTMLInputElement> } = {}) {
   })
 }
 
-export interface UploadOptions {
-  action?: (formData: FormData, data: { files: FileList, file: File, [key: string]: any }) => void | Promise<void>,
+export interface UploadOptions<ActionT = any> {
+  action?: (formData: FormData, data: { files: FileList, file: File, [key: string]: any }) => ActionT | Promise<ActionT>,
   data?:
   | Record<string, any>
   | ((d: { files: FileList, file: File, [key: string]: any }) => typeof d | Promise<typeof d>)
   readFile?: false | Parameters<typeof readFile>[0],
 }
 /** Upload files to server */
-export async function upload<DT>(options: UploadOptions) {
+export async function upload<ActionT = any>(options: UploadOptions<ActionT>) {
   const { data, action, readFile: readFileOptions } = options
   let _data: Record<string, any> = {}
   let files: FileList
@@ -49,7 +49,7 @@ export async function upload<DT>(options: UploadOptions) {
     formData.append(k, v)
   }
 
-  action?.(formData, _data as any)
+  return action?.(formData, _data as any)
 }
 
 /**
