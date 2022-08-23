@@ -69,7 +69,11 @@ export interface FormProps extends VNodeData {
   onSubmit?: (values: Record<PropertyKey, any>, handle: ElForm) => Promise<void | false> | void | false
   onReset?: () => void
   handle?: ElForm
-  cache?: false | { key?: string }
+  cache?: {
+    key?: string,
+    /** The option will be detected automatically by default */
+    mode: 'history' | 'hash',
+  }
   row?: Partial<ElRow>
   col?: Partial<ElCol>
 }
@@ -103,10 +107,7 @@ const FormItemUI: Component<
   computed: {
     cacheKey() {
       const props = this.$props as FormProps
-      if (props.cache === false) {
-        return ''
-      }
-      return props.cache?.key ?? 'form-data'
+      return props.cache ? (props.cache.key ?? 'form-data') : ''
     },
   },
   props: {
