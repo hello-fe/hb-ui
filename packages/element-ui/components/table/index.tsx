@@ -213,7 +213,7 @@ const TableElementUI: Component<
     },
   },
   render() {
-    const _this = Object.assign(this, { $createElement: arguments[0] })
+    Object.assign(this, { $createElement: arguments[0] })
     const props = this.$props as TableProps
 
     return (
@@ -232,18 +232,24 @@ const TableElementUI: Component<
               props: CP.Table.props.filter(p => p !== 'data'),
             })}
           >
-            {props.columns?.map((column, index, columns) => {
+            {props.columns?.map(function mapColumn(column: TableColumn, index: number, columns: TableColumn[]) {
               column = mergeProps(column, { props: CP.TableColumn.props })
+              const typedColumn = column.type && column.type !== 'default'
+              // 第一点击 log
+              if (!mapColumn['_click_to_log'] && !typedColumn) {
+                Object.assign(mapColumn, { _click_to_log: true })
+                Object.assign(column, { _click_to_log: true })
+              }
               return (
                 // 1. 修复 type=selection 复选排版错位 BUG
                 // 2. 修复 type=other 更加可控的渲染
-                column.type
+                typedColumn
                   ? <ElementTableColumn {...column as any}>{column.render}</ElementTableColumn>
                   : <ElementTableColumn {...withAutoFixed({ column, index, columns }) as any}>
-                    {renderColumn.call(_this, this.$refs[name], column, index)}
+                    {renderColumn.call(this, this.$refs[name], column, index)}
                   </ElementTableColumn>
               )
-            })}
+            }.bind(this))}
           </ElementTable>
         </Form>
         {props.pagination !== null && <Pagination
@@ -351,8 +357,7 @@ function renderColumn(
     node = ({ row }) => <span>{row[prop]}</span>
   }
 
-  // 第一点击 log (TODO: 第一列是选框)
-  if (index <= 0) {
+  if (column['_click_to_log']) {
     node = withClickColumnLog.call(this, node)
   }
 
