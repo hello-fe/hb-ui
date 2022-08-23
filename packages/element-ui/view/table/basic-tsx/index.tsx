@@ -56,6 +56,7 @@ const TableTsx: Component = {
           label: '姓名',
           prop: 'name',
           tooltip: {},
+          type: 'default'
         },
         {
           label: '年龄',
