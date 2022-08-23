@@ -142,16 +142,18 @@ const FormItemUI: Component<
         const needCacheParams = await props.onSubmit(props.props.model, this.$refs[name])
         // 🤔 阻止缓存
         if (needCacheParams === false) return
+        if (this.cacheKey) cacheParams(this.cacheKey, props.props.model)
       }
-      if (this.cacheKey) cacheParams(this.cacheKey, props.props.model)
     },
     onFormReset() {
       const props = this.$props as FormProps
       for (const k of Object.keys(props.props.model)) {
         props.props.model[k] = this.originalModel[k]
       }
-      if (props.onReset) props.onReset()
-      if (this.cacheKey) cacheParams(this.cacheKey, props.props.model)
+      if (props.onReset) {
+        props.onReset()
+        if (this.cacheKey) cacheParams(this.cacheKey, props.props.model)
+      }
     },
   },
 
@@ -504,6 +506,7 @@ function getParams() {
 
 // 设置缓存
 function cacheParams(key: string, data: Record<PropertyKey, any>) {
+  return // 2022-08-23
   const dict = {}
   for (const [k, v] of Object.entries(data)) {
     // 只保留有效条件
@@ -517,6 +520,7 @@ function cacheParams(key: string, data: Record<PropertyKey, any>) {
       ? { [key]: JSON.stringify(dict) }
       : undefined),
   }).toString()
+  // TODO: compatible history, hash 2022-08-23
   window.history.replaceState(
     {},
     '',
