@@ -220,14 +220,14 @@ function editComponents<RecordType = Record<PropertyKey, any>, FormValues = Reco
                 </Form.Item>
               )
             } else if (input) {
-              const { onInput, onBlur, ...restInput } = input
+              const { onChange, onBlur, ...restInput } = input
               childNode = (
                 <Form.Item name={key} {...formItem}>
                   <Input
                     allowClear
                     placeholder='请输入'
-                    onInput={event => {
-                      onInput?.(event)
+                    onChange={event => {
+                      onChange?.(event)
                       record[key] /* 软更新 🚧-② */ = (event.target as any).value
                     }}
                     onBlur={event => {
