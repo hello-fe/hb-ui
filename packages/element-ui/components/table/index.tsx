@@ -158,7 +158,7 @@ const TableElementUI: Component<
   watch: {
     '$props.data': {
       handler(d) {
-        // 合并传入参数
+        // 🚧 更新无值会造成历史数据缓存
         d && (this.formModel.tableData = d)
       },
       immediate: true,
