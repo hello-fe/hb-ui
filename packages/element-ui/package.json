@@ -16,7 +16,8 @@
     "prepublishOnly": "npm run build && tsc --emitDeclarationOnly --project tsconfig.build.json"
   },
   "peerDependencies": {
-    "@vue/babel-helper-vue-jsx-merge-props": "*"
+    "@vue/babel-helper-vue-jsx-merge-props": "*",
+    "element-ui": ">=2.0.0"
   },
   "devDependencies": {
     "@babel/core": "~7.18.9",
