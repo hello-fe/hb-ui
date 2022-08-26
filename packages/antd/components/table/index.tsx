@@ -51,6 +51,18 @@ export type TableColumn<RecordType = Record<PropertyKey, any>> = TableProps<Reco
 export type TableQuery<RecordType = Record<PropertyKey, any>> = TableProps<RecordType>['query']
 export type TableHandle<RecordType = Record<PropertyKey, any>> = TableProps<RecordType>['handle']
 
+function formatStyle() {
+  const id = 'tr-form-item_style'
+  const className = 'tr-form-item'
+  let oStyle = document.getElementById('id') as HTMLStyleElement
+  if (oStyle) return
+
+  oStyle = document.createElement<'style'>('style')
+  oStyle.id = id
+  oStyle.innerHTML = `.${className} .ant-form-item { margin: 0; }`
+  document.head.appendChild(oStyle);
+}
+
 function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<PropertyKey, any>>(props: TableProps<RecordType>) {
   const {
     columns,
@@ -70,7 +82,10 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
   const queryCount = useRef(0)
   const mounted = useRef(false)
   const unMounted = useRef(false)
-  useLayoutEffect(() => { unMounted.current = false }, []) // 🚧-①
+  useLayoutEffect(() => {
+    formatStyle();
+    unMounted.current = false // 🚧-①
+  }, [])
 
   // 请求
   const queryHandle = async (args: Parameters<TableHandle['query']>[0] = {}) => {
@@ -172,10 +187,11 @@ function editComponents<RecordType = Record<PropertyKey, any>, FormValues = Reco
       row: props => {
         // TODO: 考虑支持外部传入 FormInstance 达到完全可控
         const [form] = Form.useForm()
+        const { className, ...rest } = props
         return (
           <Form form={form} component={false}>
             <EditableContext.Provider value={form}>
-              <tr {...props} />
+              <tr className={className + ' tr-form-item'} {...rest} />
             </EditableContext.Provider>
           </Form>
         )
