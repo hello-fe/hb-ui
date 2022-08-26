@@ -105,14 +105,14 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     if (!lastItem) return lastItemNodes
     if (typeof lastItem === 'function') return lastItem(lastItemNodes, form)
 
-    const { render, ...restLastItem } = lastItem
+    const { col: lastCol, render, ...formItemProps } = lastItem
 
     return (
-      <Col {...(lastItem?.col || col)}>
+      <Col {...(lastCol || col)}>
         <Form.Item
           key='last-item'
           label=' '
-          {...restLastItem}
+          {...formItemProps}
         >
           {render ? render(lastItemNodes, form) : lastItemNodes}
         </Form.Item>
