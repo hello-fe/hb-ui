@@ -52,9 +52,11 @@ export interface FormProps<Values = Record<PropertyKey, any>> extends AntdFormPr
   lastItem?:
   | (AntdFormItemProps & {
     col?: ColProps
-    render?: (nodes: JSX.Element[], form: FormInstance<Values>) => JSX.Element // render props(小)
+    // render props(小)
+    render?: (nodes: JSX.Element[], form: FormInstance<Values>) => (JSX.Element | JSX.Element[])
   })
-  | ((nodes: JSX.Element[], form: FormInstance<Values>) => JSX.Element) // render function(大)
+  // render function(大)
+  | ((nodes: JSX.Element[], form: FormInstance<Values>) => (JSX.Element | JSX.Element[]))
   onSubmit?: (values: Values, form: FormInstance<Values>) => void
   row?: RowProps
   col?: ColProps
@@ -95,10 +97,28 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     }
   }
 
-  const lastItemNodes = [
-    <Button key='last-1' type='primary' onClick={clickSubmit}>提交</Button>,
-    <Button key='last-2' style={{ marginLeft: 10 }} onClick={() => form.resetFields()}>重置</Button>,
-  ]
+  const renderLastItem = () => {
+    const lastItemNodes = [
+      <Button key='last-1' type='primary' onClick={clickSubmit}>提交</Button>,
+      <Button key='last-2' style={{ marginLeft: 10 }} onClick={() => form.resetFields()}>重置</Button>,
+    ]
+    if (!lastItem) return lastItemNodes
+    if (typeof lastItem === 'function') return lastItem(lastItemNodes, form)
+
+    const { render, ...restLastItem } = lastItem
+
+    return (
+      <Col {...(lastItem?.col || col)}>
+        <Form.Item
+          key='last-item'
+          label=' '
+          {...restLastItem}
+        >
+          {render ? render(lastItemNodes, form) : lastItemNodes}
+        </Form.Item>
+      </Col>
+    )
+  }
 
   return (
     <Form
@@ -114,17 +134,7 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
           ? item(index, form)
           : <Col {...(item.col || col)} key={index}>{renderFormItem(form, item, index)}</Col>
         )}
-        {typeof lastItem === 'function' ? lastItem(lastItemNodes, form) : (
-          <Col {...(lastItem?.col || col)}>
-            <Form.Item
-              key='last-item'
-              label=' '
-              {...lastItem}
-            >
-              {lastItem?.render ? lastItem.render(lastItemNodes, form) : lastItemNodes}
-            </Form.Item>
-          </Col>
-        )}
+        {renderLastItem()}
       </Row>
     </Form>
   )
