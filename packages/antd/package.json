@@ -14,6 +14,9 @@
     "dev": "vite",
     "prepublishOnly": "npm run build"
   },
+  "peerDependencies": {
+    "antd": ">=4.0.0"
+  },
   "devDependencies": {
     "@ant-design/icons": "~4.7.0",
     "@types/react": "18.0.17",
