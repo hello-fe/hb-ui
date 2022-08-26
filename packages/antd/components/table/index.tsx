@@ -61,7 +61,7 @@ function formatStyle() {
   oStyle = document.createElement<'style'>('style')
   oStyle.id = id
   oStyle.innerHTML = `.${className} .ant-form-item { margin: 0; }`
-  document.head.appendChild(oStyle);
+  document.head.appendChild(oStyle)
 }
 
 function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<PropertyKey, any>>(props: TableProps<RecordType>) {
@@ -84,8 +84,8 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
   const mounted = useRef(false)
   const unMounted = useRef(false)
   useLayoutEffect(() => {
-    formatStyle();
     unMounted.current = false // 🚧-①
+    formatStyle()
   }, [])
 
   // 请求
