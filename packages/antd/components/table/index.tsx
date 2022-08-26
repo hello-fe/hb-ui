@@ -51,6 +51,7 @@ export type TableColumn<RecordType = Record<PropertyKey, any>> = TableProps<Reco
 export type TableQuery<RecordType = Record<PropertyKey, any>> = TableProps<RecordType>['query']
 export type TableHandle<RecordType = Record<PropertyKey, any>> = TableProps<RecordType>['handle']
 
+// Table 的可编辑表格的表单组件样式(对齐单元格)
 function formatStyle() {
   const id = 'tr-form-item_style'
   const className = 'tr-form-item'
