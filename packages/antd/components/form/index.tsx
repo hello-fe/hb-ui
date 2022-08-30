@@ -102,10 +102,8 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
       <Button key='last-1' type='primary' onClick={clickSubmit}>提交</Button>,
       <Button key='last-2' style={{ marginLeft: 10 }} onClick={() => form.resetFields()}>重置</Button>,
     ]
-    if (!lastItem) return lastItemNodes
     if (typeof lastItem === 'function') return lastItem(lastItemNodes, form)
-
-    const { col: lastCol, render, ...formItemProps } = lastItem
+    const { col: lastCol, render, ...formItemProps } = lastItem || {}
 
     return (
       <Col {...(lastCol || col)}>
