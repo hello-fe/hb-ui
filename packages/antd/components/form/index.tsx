@@ -66,12 +66,12 @@ export type FormItemProps<Values = Record<PropertyKey, any>> = FormProps<Values>
 
 function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
 
+  /** @see https://ant.design/components/grid/#Col */
   const colDefault: ColProps = {
-    sm: 24,
-    md: 12,
-    lg: 8,
-    xl: 6,
-    xxl: 3
+    sm: 24 / 1,  // ≥ 576px
+    md: 24 / 2,  // ≥ 768px
+    lg: 24 / 3,  // ≥ 992px
+    xxl: 24 / 4, // ≥ 1600px
   }
 
   const {
@@ -84,7 +84,7 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     form = Form.useForm<Values>()[0],
     className,
     row,
-    col = colDefault, // TODO
+    col = colDefault,
     ...restFormProps
   } = props
 
