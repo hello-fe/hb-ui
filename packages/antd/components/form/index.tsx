@@ -65,22 +65,22 @@ export interface FormProps<Values = Record<PropertyKey, any>> extends AntdFormPr
 export type FormItemProps<Values = Record<PropertyKey, any>> = FormProps<Values>['items'][number]
 
 function formateStyle() {
-  let id = "hb-ui-form_style";
-  const className = "hb-ui-form";
-  let oStyle = document.getElementById(id) as HTMLStyleElement;
-  if (oStyle) return;
+  let id = 'hb-ui-form__style'
+  const className = 'hb-ui-form'
+  let oStyle = document.getElementById(id) as HTMLStyleElement
+  if (oStyle) return
 
-  oStyle = document.createElement<'style'>('style');
-  oStyle.id = id;
+  oStyle = document.createElement<'style'>('style')
+  oStyle.id = id
   oStyle.innerHTML = `.${className} .ant-picker { width: 100%; }`
-  document.head.appendChild(oStyle);
+  document.head.appendChild(oStyle)
 }
 
 function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
 
   useLayoutEffect(() => {
     formateStyle()
-  })
+  }, [])
 
   /** @see https://ant.design/components/grid/#Col */
   const colDefault: ColProps = {
