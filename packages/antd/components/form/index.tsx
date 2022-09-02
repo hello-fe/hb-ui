@@ -176,7 +176,7 @@ function renderFormItem<Values = Record<PropertyKey, any>>(
 
   let node: JSX.Element
   const defaultNode = (
-    <Input placeholder={`请输入${item.label || ''}`} {...input} />
+    <Input allowClear placeholder={`请输入${item.label || ''}`} {...input} />
   )
 
   if (render) {
@@ -185,15 +185,15 @@ function renderFormItem<Values = Record<PropertyKey, any>>(
     node = defaultNode
   } else if (select) {
     node = (
-      <Select placeholder={`请选择${item.label || ''}`} {...select} />
+      <Select allowClear placeholder={`请选择${item.label || ''}`} {...select} />
     )
   } else if (datePicker) {
     node = (
-      <DatePicker {...datePicker} />
+      <DatePicker allowClear {...datePicker} />
     )
   } else if (rangePicker) {
     node = (
-      <DatePicker.RangePicker {...rangePicker} />
+      <DatePicker.RangePicker allowClear {...rangePicker} />
     )
   } else if (checkboxGroup) {
     node = (
