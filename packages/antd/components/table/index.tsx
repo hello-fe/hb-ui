@@ -81,6 +81,7 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
     ...props_pagination,
   })
   const queryCount = useRef(0)
+  const queryArgs = useRef<Parameters<TableHandle['query']>[0]>()
   const mounted = useRef(false)
   const unMounted = useRef(false)
   useLayoutEffect(() => {
@@ -121,7 +122,10 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
   // handle 挂载
   useEffect(() => {
     if (handle) {
-      handle.query = queryHandle
+      handle.query = args => {
+        queryArgs.current = args
+        queryHandle(args)
+      }
       handle.data = data as RecordType[]
     }
   }, [handle, data])
@@ -153,7 +157,11 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
       // !query && setPage(pagination)
 
       const { current, pageSize, total } = pagination
-      queryHandle({ pagination: { current, pageSize, total } })
+      queryHandle({
+        pagination: { current, pageSize, total },
+        // use last cache
+        payload: queryArgs.current.payload,
+      })
     },
     pagination: page,
     ...rest,
