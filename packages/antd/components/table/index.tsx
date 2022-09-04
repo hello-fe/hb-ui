@@ -120,7 +120,10 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
   }
 
   // 外部传入 dataSource
-  useEffect(() => { mounted.current && setData(dataSource) }, [dataSource])
+  useEffect(() => {
+    // initialized in `useState(dataSource)`
+    mounted.current && setData(dataSource)
+  }, [dataSource])
 
   // handle 挂载
   useEffect(() => {
