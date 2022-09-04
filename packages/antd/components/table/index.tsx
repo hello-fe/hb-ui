@@ -2,6 +2,7 @@ import React, {
   useContext,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -84,6 +85,8 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
   const queryArgs = useRef<Parameters<TableHandle['query']>[0]>()
   const mounted = useRef(false)
   const unMounted = useRef(false)
+  const editable = useMemo(() => columns.find(col => col.formItem), [columns])
+
   useLayoutEffect(() => {
     unMounted.current = false // 🚧-①
     formatStyle()
@@ -168,7 +171,10 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
   }
 
   return (
-    <Table components={editComponents()} {...tableProps as any} />
+    <Table
+      components={editable ? editComponents() : undefined}
+      {...tableProps as any}
+    />
   )
 }
 
