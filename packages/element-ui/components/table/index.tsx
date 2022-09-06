@@ -34,7 +34,7 @@ import type { OptionRecord, JSX_ELEMENT } from '../types'
 const Tooltip = { ...ElementTooltip }
 // 屏蔽 Tooltip.content 传入组件警告
 // @ts-ignore
-Tooltip.props.content.type = [String, Object]
+Tooltip.props.content.type = undefined
 
 export interface TableProps<RowType = Record<PropertyKey, any>> extends Partial<ElTable>, VNodeData {
   /** @override */
@@ -401,11 +401,12 @@ function withTooltip(
   const style = 'overflow:hidden; text-overflow:ellipsis; white-space:nowrap;'
 
   return (obj: Parameters<TableColumn['render']>[0]) => {
+    const content = column.render ? column.render(obj) : obj.row[column.prop]
     let n = ensureNodeValueVNode.call(this, render(obj))
     // @ts-ignore
     n = <Tooltip
       placement={tooltip.props?.placement ?? 'top'}
-      content={tooltip.render ? tooltip.render(obj) : obj.row[column.prop]}
+      content={tooltip.render ? tooltip.render(obj) : content}
       {...mergeProps(tooltip, { props: CP.Tooltip.props })}
     >
       <div style={style}>{n}</div>
