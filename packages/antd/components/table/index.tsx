@@ -56,7 +56,7 @@ export type TableHandle<RecordType = Record<PropertyKey, any>> = TableProps<Reco
 function formatStyle() {
   const id = 'tr-form-item_style'
   const className = 'tr-form-item'
-  let oStyle = document.getElementById('id') as HTMLStyleElement
+  let oStyle = document.getElementById(id) as HTMLStyleElement
   if (oStyle) return
 
   oStyle = document.createElement<'style'>('style')
@@ -81,8 +81,9 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
     showQuickJumper: true,
     ...props_pagination,
   })
+  const [loading, setLoading] = useState(false)
   const queryCount = useRef(0)
-  const queryArgs = useRef<Parameters<TableHandle['query']>[0]>()
+  const queryArgs = useRef<Parameters<TableHandle['query']>[0]>() // query's args cache
   const mounted = useRef(false)
   const unMounted = useRef(false)
   const editable = useMemo(() => columns.find(col => col.formItem), [columns])
@@ -103,11 +104,13 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
       total: page.total,
     } : undefined)
 
+    setLoading(true)
     const result = await query({
       count: queryCount.current,
       pagination,
-      payload: args.payload
+      payload: args.payload,
     })
+    setLoading(false)
     if (!result) return // 打断请求 or 无效请求
 
     if (unMounted.current) return // 🚧-①
@@ -166,7 +169,7 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
       queryHandle({
         pagination: { current, pageSize, total },
         // use last cache
-        payload: queryArgs.current.payload,
+        payload: queryArgs.current?.payload,
       })
     },
     pagination: page,
@@ -176,6 +179,7 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
   return (
     <Table
       components={editable ? editComponents() : undefined}
+      loading={loading}
       {...tableProps as any}
     />
   )
