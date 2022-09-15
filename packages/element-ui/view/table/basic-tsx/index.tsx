@@ -20,8 +20,15 @@ const TableTsx: Component = {
     const data: RowType[] = [
       { name: '张三', age: 23, gender: 1, date: Date.now() },
       { name: '阿宁', age: 24, gender: 0, date: Date.now() },
+      { name: '张三', age: 23, gender: 1, date: Date.now() },
+      { name: '阿宁', age: 24, gender: 0, date: Date.now() },
+      { name: '张三', age: 23, gender: 1, date: Date.now() },
+      { name: '阿宁', age: 24, gender: 0, date: Date.now() },
+      { name: '张三', age: 23, gender: 1, date: Date.now() },
+      { name: '阿宁', age: 24, gender: 0, date: Date.now() },
+      { name: '张三', age: 23, gender: 1, date: Date.now() },
     ]
-    const pagination = { currentPage: 1, pageSize: 10, total: 10 }
+    const pagination = { currentPage: 1, pageSize: 10, total: 16 }
 
     return {
       data,
@@ -34,6 +41,9 @@ const TableTsx: Component = {
 
       // 打断请求
       // return
+      this.pagination.currentPage = args.pagination.currentPage
+      this.pagination.pageSize = args.pagination.pageSize
+      this.pagination.total = 16
 
       // 这里写请求
       return {
@@ -51,7 +61,7 @@ const TableTsx: Component = {
       query: args => this.query(args),
       handle: this.tableHandle,
       columns: [
-        { type: 'selection' },
+        { type: 'index' },
         {
           label: '姓名',
           prop: 'name',

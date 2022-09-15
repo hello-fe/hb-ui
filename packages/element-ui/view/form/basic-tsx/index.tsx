@@ -18,8 +18,9 @@ const FormTsx: Component = {
   },
   render() {
     const formProps: FormProps = {
-      cache: { filterKey: 'filterData' },
+      cache: {},
       onSubmit: this.onSubmit,
+      onReset: this.onSubmit,
       handle: this.formHandle,
       items: [
         {

@@ -69,11 +69,7 @@ export interface FormProps extends VNodeData {
   onSubmit?: (values: Record<PropertyKey, any>, handle: ElForm) => Promise<void | false> | void | false
   onReset?: FormProps['onSubmit']
   handle?: ElForm
-  cache?: {
-    key?: string,
-    /** The option will be detected automatically by default */
-    mode: 'history' | 'hash',
-  }
+  cache?: { key?: string }
   row?: Partial<ElRow>
   col?: Partial<ElCol>
 }
@@ -504,12 +500,11 @@ const CP: Record<string, { props: string[]; on: string[]; }> = {
 
 // 获取缓存
 function getParams() {
-  return Object.fromEntries(new URLSearchParams(location.search.slice(1)))
+  return Object.fromEntries(new URLSearchParams(location.href.split('?')[1]))
 }
 
 // 设置缓存
 function cacheParams(key: string, data: Record<PropertyKey, any>) {
-  return // 2022-08-23
   const dict = {}
   for (const [k, v] of Object.entries(data)) {
     // 只保留有效条件
@@ -523,11 +518,10 @@ function cacheParams(key: string, data: Record<PropertyKey, any>) {
       ? { [key]: JSON.stringify(dict) }
       : undefined),
   }).toString()
-  // TODO: compatible history, hash 2022-08-23
   window.history.replaceState(
     {},
     '',
-    `/${location.hash.split('?')[0]}${queryString ? '?' : ''}${queryString}`
+    `${location.href.replace(location.origin, '').split('?')[0]}${queryString ? '?' : ''}${queryString}`
   )
 }
 
