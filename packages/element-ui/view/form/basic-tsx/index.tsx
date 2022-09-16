@@ -27,7 +27,9 @@ const FormTsx: Component = {
           // 属性写在顶级
           label: '地区',
           prop: 'area',
-          rules: { required: true, message: '请选择地区' },
+          props: {
+            // rules: { required: true, message: '请选择地区' },
+          },
           select: {
             options: [
               { value: '1', label: 'one' },
@@ -37,7 +39,9 @@ const FormTsx: Component = {
               change: (e) => { console.log('change', e) },
               input: (e) => { console.log('input', e) },
             },
-            clearable: false,
+            props: {
+              clearable: true,
+            }
           },
         },
         {
@@ -45,7 +49,7 @@ const FormTsx: Component = {
             // 属性写在 props
             label: '姓名',
             prop: 'name',
-            rules: { required: true, message: '请输入姓名' },
+            // rules: { required: true, message: '请输入姓名' },
             // TODO: ❌
             scopedSlots: () => ({
               error: <span><i class='el-icon-s-flag' />阿塞阀塞阀</span>

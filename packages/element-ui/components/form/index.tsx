@@ -498,9 +498,14 @@ const CP: Record<string, { props: string[]; on: string[]; }> = {
   },
 }
 
+// 获取参数
+function getUrlParams(){
+  return location.href.split('?')[1]?.split('#')[0]?.replace('/', '');
+}
+
 // 获取缓存
 function getParams() {
-  return Object.fromEntries(new URLSearchParams(location.href.split('?')[1]))
+  return Object.fromEntries(new URLSearchParams(getUrlParams()))
 }
 
 // 设置缓存
@@ -518,11 +523,17 @@ function cacheParams(key: string, data: Record<PropertyKey, any>) {
       ? { [key]: JSON.stringify(dict) }
       : undefined),
   }).toString()
-  window.history.replaceState(
-    {},
-    '',
-    `${location.href.replace(location.origin, '').split('?')[0]}${queryString ? '?' : ''}${queryString}`
-  )
+
+  let newState = location.href.replace(location.origin, '')
+  if(queryString && getUrlParams()){
+    newState = newState.replace(getUrlParams(), queryString)
+  } else if(queryString){
+    newState = `${newState}?${queryString}`
+  } else if(getUrlParams()){
+    newState = newState.replace(`?${getUrlParams()}`, '')
+  }
+
+  window.history.replaceState({}, '', newState)
 }
 
 function formStyle() {
