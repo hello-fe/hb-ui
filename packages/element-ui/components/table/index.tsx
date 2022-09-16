@@ -207,7 +207,9 @@ const TableElementUI: Component<
       const { data, ...pagination2 } = result
       this.formModel.tableData = data
       if (page2) {
-        this.pagination2 = pagination2
+        this.pagination2.currentPage = pagination2.currentPage
+        this.pagination2.pageSize = pagination2.pageSize
+        this.pagination2.total = pagination2.total
       }
     },
   },
