@@ -499,7 +499,10 @@ const CP: Record<string, { props: string[]; on: string[]; }> = {
 }
 
 // 获取参数
-function getUrlParams(){
+function getUrlParams() {
+  // e.g.
+  //   http://www.foo.com/index.html?abc=123/#/hash - ?在前
+  //   http://www.foo.com/index.html/#/hash?abc=123 - #在前
   return location.href.split('?')[1]?.split('#')[0]?.replace('/', '');
 }
 
@@ -523,14 +526,15 @@ function cacheParams(key: string, data: Record<PropertyKey, any>) {
       ? { [key]: JSON.stringify(dict) }
       : undefined),
   }).toString()
+  const urlParams = getUrlParams()
 
   let newState = location.href.replace(location.origin, '')
-  if(queryString && getUrlParams()){
-    newState = newState.replace(getUrlParams(), queryString)
-  } else if(queryString){
+  if (queryString && urlParams) {
+    newState = newState.replace(urlParams, queryString)
+  } else if (queryString) {
     newState = `${newState}?${queryString}`
-  } else if(getUrlParams()){
-    newState = newState.replace(`?${getUrlParams()}`, '')
+  } else if (urlParams) {
+    newState = newState.replace(`?${urlParams}`, '')
   }
 
   window.history.replaceState({}, '', newState)
