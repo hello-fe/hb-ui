@@ -1,6 +1,6 @@
 {
   "name": "@hb-ui/element-ui",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "packageManager": "pnpm@7.0.0",
   "description": "基于 Element UI 二次封装的一些常用组件",
   "main": "es/index.js",
