@@ -46,6 +46,8 @@ export interface TableProps<RecordType = Record<PropertyKey, any>> extends Omit<
     data: RecordType[]
     /** 可编辑表格每一行都是一个独立的 Form */
     forms: FormInstance[] // TODO: FormInstance<FormValues>
+    /** 可编辑表格重置 */
+    resetForms: () => void
   }
 }
 
@@ -123,6 +125,17 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
     }
   }
 
+  // 可编辑表格重置
+  const resetForms = () => {
+    setData(data.map(d => {
+      const keys = Object.keys(d).filter(key => key.endsWith(editComponents._old))
+      for (const key of keys) {
+        d[key.replace(editComponents._old, '')] = d[key]
+      }
+      return d
+    }))
+  }
+
   // 外部传入 dataSource
   useEffect(() => {
     // initialized in `useState(dataSource)`
@@ -138,6 +151,7 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
       }
       handle.data = data as RecordType[]
       handle.forms = []
+      handle.resetForms = resetForms
     }
   }, [handle, data])
 
@@ -262,7 +276,7 @@ function editComponents<RecordType = Record<PropertyKey, any>, FormValues = Reco
             } = formItem as TableColumn<RecordType>['formItem']
 
             // 当前列为 Form 元素，将原数据备份到 dataIndex_old 中
-            const backupKey = key + '_old'
+            const backupKey = key + editComponents._old
             if (!Object.keys(record).includes(backupKey)) {
               record[backupKey] = record[key]
             }
@@ -337,3 +351,4 @@ editComponents.withOnRow = function withOnRow<RecordType = Record<PropertyKey, a
   }
   return tableProps
 }
+editComponents._old = '_old'
