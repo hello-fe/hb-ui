@@ -1,5 +1,4 @@
 import React, {
-  // useContext,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -45,7 +44,7 @@ export interface TableProps<RecordType = Record<PropertyKey, any>> extends Omit<
     // React 单项数据流设计，遂抛出 dataSource
     data: RecordType[]
     /** 可编辑表格每一行都是一个独立的 Form */
-    forms: FormInstance[] // TODO: FormInstance<FormValues>
+    forms: FormInstance[]
     /** 可编辑表格重置 */
     resetForms: () => void
   }
@@ -219,7 +218,6 @@ function editComponents<RecordType = Record<PropertyKey, any>, FormValues = Reco
   } = {},
 ): AntdTableProps<RecordType>['components'] {
   // 每行独立一个 FormInstance
-  // const EditableContext = React.createContext({} as FormInstance)
 
   return {
     body: {
@@ -242,9 +240,7 @@ function editComponents<RecordType = Record<PropertyKey, any>, FormValues = Reco
             component={false}
             initialValues={record}
           >
-            {/* <EditableContext.Provider value={form}> */}
             <tr className={className + ' tr-form-item'} {...rest} />
-            {/* </EditableContext.Provider> */}
           </Form>
         )
       },
@@ -260,13 +256,8 @@ function editComponents<RecordType = Record<PropertyKey, any>, FormValues = Reco
 
         // title 列无 record
         if (record) {
-          // const form = useContext<FormInstance<FormValues>>(EditableContext)
           const { dataIndex, formItem } = (column || {}) as TableColumn<RecordType>
           const key = dataIndex as string
-
-          // 初始化数据同步到 Form 中 - 回填数据
-          // 在 Antd 提供的 Demo 中点击可编辑 cell 时触发 form.setFieldsValue 规避频繁触发
-          // - form.setFieldsValue({ [key]: record[key] } as any) | 2022-09-21 使用 initialValues
 
           if (formItem) {
             const {
