@@ -1,5 +1,5 @@
 import React, {
-  useContext,
+  // useContext,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -44,7 +44,8 @@ export interface TableProps<RecordType = Record<PropertyKey, any>> extends Omit<
     query: (args?: Omit<Parameters<TableQuery<RecordType>>[0], 'count'>) => void
     // React 单项数据流设计，遂抛出 dataSource
     data: RecordType[]
-    // forms: FormInstance[] // TODO: FormInstance<FormValues>
+    /** 可编辑表格每一行都是一个独立的 Form */
+    forms: FormInstance[] // TODO: FormInstance<FormValues>
   }
 }
 
@@ -136,6 +137,7 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
         queryHandle(args)
       }
       handle.data = data as RecordType[]
+      handle.forms = []
     }
   }, [handle, data])
 
@@ -155,7 +157,7 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
     }
   }, [])
 
-  const tableProps: AntdTableProps<RecordType> = {
+  const tableProps: AntdTableProps<RecordType> = editComponents.withOnRow({
     size: 'small',
     columns: editComponents.withOnCell(columns),
     dataSource: data,
@@ -174,11 +176,11 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
     },
     pagination: page,
     ...rest,
-  }
+  })
 
   return (
     <Table
-      components={editable ? editComponents() : undefined}
+      components={editable ? editComponents({ handle }) : undefined}
       loading={loading}
       {...tableProps as any}
     />
@@ -199,22 +201,36 @@ export default TableAntd
 function editComponents<RecordType = Record<PropertyKey, any>, FormValues = Record<PropertyKey, any>>(
   args: {
     onFieldChange?: (args: { key: string; value: any; index: number }) => void,
+    handle?: TableHandle<RecordType>,
   } = {},
 ): AntdTableProps<RecordType>['components'] {
   // 每行独立一个 FormInstance
-  const EditableContext = React.createContext({} as FormInstance)
+  // const EditableContext = React.createContext({} as FormInstance)
 
   return {
     body: {
       row: props => {
         // TODO: 考虑支持外部传入 FormInstance 达到完全可控
         const [form] = Form.useForm()
-        const { className, ...rest } = props
+        const {
+          className,
+          record,
+          index,
+          ...rest
+        } = props
+        if (args.handle?.forms && typeof index === /* <thead> is undefined */'number') {
+          // 抛出 FormInstance
+          args.handle.forms[index] = form
+        }
         return (
-          <Form form={form} component={false}>
-            <EditableContext.Provider value={form}>
-              <tr className={className + ' tr-form-item'} {...rest} />
-            </EditableContext.Provider>
+          <Form
+            form={form}
+            component={false}
+            initialValues={record}
+          >
+            {/* <EditableContext.Provider value={form}> */}
+            <tr className={className + ' tr-form-item'} {...rest} />
+            {/* </EditableContext.Provider> */}
           </Form>
         )
       },
@@ -230,13 +246,13 @@ function editComponents<RecordType = Record<PropertyKey, any>, FormValues = Reco
 
         // title 列无 record
         if (record) {
-          const form = useContext<FormInstance<FormValues>>(EditableContext)
+          // const form = useContext<FormInstance<FormValues>>(EditableContext)
           const { dataIndex, formItem } = (column || {}) as TableColumn<RecordType>
           const key = dataIndex as string
 
           // 初始化数据同步到 Form 中 - 回填数据
           // 在 Antd 提供的 Demo 中点击可编辑 cell 时触发 form.setFieldsValue 规避频繁触发
-          form.setFieldsValue({ [key]: record[key] } as any)
+          // - form.setFieldsValue({ [key]: record[key] } as any) | 2022-09-21 使用 initialValues
 
           if (formItem) {
             const {
@@ -247,7 +263,7 @@ function editComponents<RecordType = Record<PropertyKey, any>, FormValues = Reco
 
             // 当前列为 Form 元素，将原数据备份到 dataIndex_old 中
             const backupKey = key + '_old'
-            if (record[backupKey] === undefined) {
+            if (!Object.keys(record).includes(backupKey)) {
               record[backupKey] = record[key]
             }
 
@@ -270,8 +286,8 @@ function editComponents<RecordType = Record<PropertyKey, any>, FormValues = Reco
                     }}
                     onBlur={event => {
                       onBlur?.(event)
-                      args.onFieldChange?.({ key, value: event.target.value, index })
-                    }} // 硬更新
+                      args.onFieldChange?.({ key, value: event.target.value, index }) // 硬更新
+                    }}
                     {...restInput}
                   />
                 </Form.Item>
@@ -306,9 +322,18 @@ editComponents.withOnCell = function onCell<RecordType = Record<PropertyKey, any
     ...column,
     // 透传至 components.body.cell
     onCell: (record, index) => ({
+      // TODO: const original = column.onCell
       column,
       record,
       index,
     } as any),
   }))
+}
+editComponents.withOnRow = function withOnRow<RecordType = Record<PropertyKey, any>>(tableProps: TableProps<RecordType>): typeof tableProps {
+  // Passed into components.body.row
+  tableProps.onRow = function onRow(record, index) {
+    // TODO: const original = tableProps.onRow
+    return { record, index } as any
+  }
+  return tableProps
 }
