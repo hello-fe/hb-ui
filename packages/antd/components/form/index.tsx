@@ -95,14 +95,13 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     lastItem,
     onSubmit,
     onReset,
-    // 🤔 如果外部需要 FormInstance 可以从外部传递进来
-    // 默认值使用不当可能会掉进 hooks 陷阱！
-    form = Form.useForm<Values>()[0],
+    form: propsForm,
     className,
     row,
     col = colDefault,
     ...restFormProps
   } = props
+  const [form] = Form.useForm<Values>(propsForm)
 
   const clickSubmit = async () => {
     try {
