@@ -13,6 +13,7 @@ export default () => {
 
   const formProps: FormProps = {
     onSubmit,
+    initialValues: { name: '阿宁' },
     items: [
       {
         label: '姓名',
