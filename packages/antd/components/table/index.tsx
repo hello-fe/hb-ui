@@ -22,7 +22,7 @@ import type {
 
 // 🚧-①: 屏蔽 React.StrictMode 副作用
 
-export interface TableProps<RecordType = Record<PropertyKey, any>> extends Omit<AntdTableProps<RecordType>, 'columns'> {
+export interface TableProps<RecordType = Record<string, any>> extends Omit<AntdTableProps<RecordType>, 'columns'> {
   columns?: (AntdColumnType<RecordType> & {
     formItem?: FormItemProps & {
       input?: InputProps
@@ -50,9 +50,9 @@ export interface TableProps<RecordType = Record<PropertyKey, any>> extends Omit<
   }
 }
 
-export type TableColumn<RecordType = Record<PropertyKey, any>> = TableProps<RecordType>['columns'][number]
-export type TableQuery<RecordType = Record<PropertyKey, any>> = TableProps<RecordType>['query']
-export type TableHandle<RecordType = Record<PropertyKey, any>> = TableProps<RecordType>['handle']
+export type TableColumn<RecordType = Record<string, any>> = TableProps<RecordType>['columns'][number]
+export type TableQuery<RecordType = Record<string, any>> = TableProps<RecordType>['query']
+export type TableHandle<RecordType = Record<string, any>> = TableProps<RecordType>['handle']
 
 // Table 的可编辑表格的表单组件样式(对齐单元格)
 function formatStyle() {
@@ -67,7 +67,7 @@ function formatStyle() {
   document.head.appendChild(oStyle)
 }
 
-function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<PropertyKey, any>>(props: TableProps<RecordType>) {
+function TableAntd<RecordType = Record<string, any>, FormValues = Record<string, any>>(props: TableProps<RecordType>) {
   const {
     columns,
     dataSource,
@@ -124,17 +124,6 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
     }
   }
 
-  // 可编辑表格重置
-  const resetForms = () => {
-    setData(data.map(d => {
-      const keys = Object.keys(d).filter(key => key.endsWith(editComponents._old))
-      for (const key of keys) {
-        d[key.replace(editComponents._old, '')] = d[key]
-      }
-      return d
-    }))
-  }
-
   // 外部传入 dataSource
   useEffect(() => {
     // initialized in `useState(dataSource)`
@@ -150,7 +139,9 @@ function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<Pr
       }
       handle.data = data as RecordType[]
       handle.forms = []
-      handle.resetForms = resetForms
+      handle.resetForms = () => {
+        setData(editComponents.resetData(data))
+      }
     }
   }, [handle, data])
 
@@ -211,7 +202,7 @@ export default TableAntd
  * 可编辑表格实现
  * @see https://ant.design/components/table/#components-table-demo-edit-cell
  */
-function editComponents<RecordType = Record<PropertyKey, any>, FormValues = Record<PropertyKey, any>>(
+function editComponents<RecordType = Record<string, any>, FormValues = Record<string, any>>(
   args: {
     onFieldChange?: (args: { key: string; value: any; index: number }) => void,
     handle?: TableHandle<RecordType>,
@@ -322,7 +313,7 @@ function editComponents<RecordType = Record<PropertyKey, any>, FormValues = Reco
     },
   }
 }
-editComponents.withOnCell = function onCell<RecordType = Record<PropertyKey, any>>(columns: TableColumn<RecordType>[]): typeof columns {
+editComponents.withOnCell = function onCell<RecordType = Record<string, any>>(columns: TableColumn<RecordType>[]): typeof columns {
   return columns.map(column => ({
     ...column,
     // 透传至 components.body.cell
@@ -334,7 +325,7 @@ editComponents.withOnCell = function onCell<RecordType = Record<PropertyKey, any
     } as any),
   }))
 }
-editComponents.withOnRow = function withOnRow<RecordType = Record<PropertyKey, any>>(tableProps: TableProps<RecordType>): typeof tableProps {
+editComponents.withOnRow = function withOnRow<RecordType = Record<string, any>>(tableProps: TableProps<RecordType>): typeof tableProps {
   // Passed into components.body.row
   tableProps.onRow = function onRow(record, index) {
     // TODO: const original = tableProps.onRow
@@ -343,3 +334,12 @@ editComponents.withOnRow = function withOnRow<RecordType = Record<PropertyKey, a
   return tableProps
 }
 editComponents._old = '_old'
+editComponents.resetData = function resetData<RecordType = Record<string, any>>(data: TableProps<RecordType>['dataSource']) {
+  return data.map(d => {
+    const keys = Object.keys(d).filter(key => key.endsWith(editComponents._old))
+    for (const key of keys) {
+      d[key.replace(editComponents._old, '')] = d[key]
+    }
+    return d
+  })
+}
