@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Tooltip } from 'antd'
+import { Button, Space, Tooltip } from 'antd'
 import {
   Table,
   TableProps,
@@ -24,6 +24,10 @@ export default () => {
 
   const clickViewData = () => {
     console.log(handle.data)
+  }
+  
+  const resetForm = () => {
+    handle.resetForms()
   }
 
   const reload = () => {
@@ -96,9 +100,10 @@ export default () => {
 
   return (
     <>
-      <div style={{ marginBottom: 10 }}>
+      <Space style={{ marginBottom: 10 }}>
         <Button type='primary' onClick={clickViewData}>查看数据</Button>
-      </div>
+        <Button type='primary' onClick={resetForm}>重置表单</Button>
+      </Space>
       <Table {...tableProps} />
     </>
   )

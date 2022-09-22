@@ -1,4 +1,5 @@
 import React, {
+  useContext,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -22,7 +23,7 @@ import type {
 
 // 🚧-①: 屏蔽 React.StrictMode 副作用
 
-export interface TableProps<RecordType = Record<string, any>> extends Omit<AntdTableProps<RecordType>, 'columns'> {
+export interface TableProps<RecordType = Record<PropertyKey, any>> extends Omit<AntdTableProps<RecordType>, 'columns'> {
   columns?: (AntdColumnType<RecordType> & {
     formItem?: FormItemProps & {
       input?: InputProps
@@ -43,16 +44,13 @@ export interface TableProps<RecordType = Record<string, any>> extends Omit<AntdT
     query: (args?: Omit<Parameters<TableQuery<RecordType>>[0], 'count'>) => void
     // React 单项数据流设计，遂抛出 dataSource
     data: RecordType[]
-    /** 可编辑表格每一行都是一个独立的 Form */
-    forms: FormInstance[]
-    /** 可编辑表格重置 */
-    resetForms: () => void
+    // forms: FormInstance[] // TODO: FormInstance<FormValues>
   }
 }
 
-export type TableColumn<RecordType = Record<string, any>> = TableProps<RecordType>['columns'][number]
-export type TableQuery<RecordType = Record<string, any>> = TableProps<RecordType>['query']
-export type TableHandle<RecordType = Record<string, any>> = TableProps<RecordType>['handle']
+export type TableColumn<RecordType = Record<PropertyKey, any>> = TableProps<RecordType>['columns'][number]
+export type TableQuery<RecordType = Record<PropertyKey, any>> = TableProps<RecordType>['query']
+export type TableHandle<RecordType = Record<PropertyKey, any>> = TableProps<RecordType>['handle']
 
 // Table 的可编辑表格的表单组件样式(对齐单元格)
 function formatStyle() {
@@ -67,7 +65,7 @@ function formatStyle() {
   document.head.appendChild(oStyle)
 }
 
-function TableAntd<RecordType = Record<string, any>, FormValues = Record<string, any>>(props: TableProps<RecordType>) {
+function TableAntd<RecordType = Record<PropertyKey, any>, FormValues = Record<PropertyKey, any>>(props: TableProps<RecordType>) {
   const {
     columns,
     dataSource,
@@ -138,14 +136,6 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
         queryHandle(args)
       }
       handle.data = data as RecordType[]
-      handle.forms = []
-      handle.resetForms = () => {
-        // 🤔 出于性能及编程复杂度考虑，不使用 FormAPI 同步 dataSource，直接在此更新
-        setData(resetDataSource(data))
-        for (const form of handle.forms) {
-          form.resetFields()
-        }
-      }
     }
   }, [handle, data])
 
@@ -165,7 +155,7 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
     }
   }, [])
 
-  const tableProps: AntdTableProps<RecordType> = editComponents.withOnRow({
+  const tableProps: AntdTableProps<RecordType> = {
     size: 'small',
     columns: editComponents.withOnCell(columns),
     dataSource: data,
@@ -184,11 +174,11 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
     },
     pagination: page,
     ...rest,
-  })
+  }
 
   return (
     <Table
-      components={editable ? editComponents({ handle }) : undefined}
+      components={editable ? editComponents() : undefined}
       loading={loading}
       {...tableProps as any}
     />
@@ -206,51 +196,25 @@ export default TableAntd
  * 可编辑表格实现
  * @see https://ant.design/components/table/#components-table-demo-edit-cell
  */
-function editComponents<RecordType = Record<string, any>, FormValues = Record<string, any>>(
+function editComponents<RecordType = Record<PropertyKey, any>, FormValues = Record<PropertyKey, any>>(
   args: {
-    handle: TableHandle<RecordType>,
     onFieldChange?: (args: { key: string; value: any; index: number }) => void,
-  },
+  } = {},
 ): AntdTableProps<RecordType>['components'] {
   // 每行独立一个 FormInstance
+  const EditableContext = React.createContext({} as FormInstance)
 
   return {
     body: {
-      row: ({
-        record,
-        index,
-
-        className: CN,
-        ...rest
-      }) => {
-        const className = CN + ' tr-form-item'
-
-        if (typeof index === /* <thead> */'undefined') {
-          return <tr className={className} {...rest} />
-        }
-
+      row: props => {
         // TODO: 考虑支持外部传入 FormInstance 达到完全可控
-        const [form] = Form.useForm(args.handle.forms[index])
-        // 抛出 FormInstance
-        args.handle.forms[index] = form
-        const values = (rest.children as Record<string, any>[])
-          .map(child => child.props.additionalProps.column as TableColumn<RecordType>)
-          .filter(column => column.formItem)
-          /**
-           * Expected ")" but found "as"
-           *   at failureErrorWithLog (/node_modules/esbuild/lib/main.js:1615:15)
-           * .map(column => column.dataIndex /* Only support string *\/ as string)
-           */
-          .map(column => column.dataIndex as /* Only support string */ string)
-          .reduce((memo, key) => Object.assign(memo, { [key]: record[key] }), {})
-
+        const [form] = Form.useForm()
+        const { className, ...rest } = props
         return (
-          <Form
-            form={form}
-            component={false}
-            initialValues={values}
-          >
-            <tr className={className} {...rest} />
+          <Form form={form} component={false}>
+            <EditableContext.Provider value={form}>
+              <tr className={className + ' tr-form-item'} {...rest} />
+            </EditableContext.Provider>
           </Form>
         )
       },
@@ -260,14 +224,19 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
         index,
 
         children,
-        ...rest
+        ...restProps
       }) => {
         let childNode = children
 
         // title 列无 record
         if (record) {
+          const form = useContext<FormInstance<FormValues>>(EditableContext)
           const { dataIndex, formItem } = (column || {}) as TableColumn<RecordType>
           const key = dataIndex as string
+
+          // 初始化数据同步到 Form 中 - 回填数据
+          // 在 Antd 提供的 Demo 中点击可编辑 cell 时触发 form.setFieldsValue 规避频繁触发
+          form.setFieldsValue({ [key]: record[key] } as any)
 
           if (formItem) {
             const {
@@ -278,7 +247,7 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
 
             // 当前列为 Form 元素，将原数据备份到 dataIndex_old 中
             const backupKey = key + '_old'
-            if (!Object.keys(record).includes(backupKey)) {
+            if (record[backupKey] === undefined) {
               record[backupKey] = record[key]
             }
 
@@ -301,8 +270,8 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
                     }}
                     onBlur={event => {
                       onBlur?.(event)
-                      args.onFieldChange?.({ key, value: event.target.value, index }) // 硬更新
-                    }}
+                      args.onFieldChange?.({ key, value: event.target.value, index })
+                    }} // 硬更新
                     {...restInput}
                   />
                 </Form.Item>
@@ -327,38 +296,19 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
           }
         }
 
-        return <td {...rest}>{childNode}</td>
+        return <td {...restProps}>{childNode}</td>
       },
     },
   }
 }
-editComponents.withOnCell = function onCell<RecordType = Record<string, any>>(columns: TableColumn<RecordType>[]): typeof columns {
+editComponents.withOnCell = function onCell<RecordType = Record<PropertyKey, any>>(columns: TableColumn<RecordType>[]): typeof columns {
   return columns.map(column => ({
     ...column,
     // 透传至 components.body.cell
     onCell: (record, index) => ({
-      // TODO: const original = column.onCell
       column,
       record,
       index,
     } as any),
   }))
-}
-editComponents.withOnRow = function withOnRow<RecordType = Record<string, any>>(tableProps: TableProps<RecordType>): typeof tableProps {
-  // Passed into components.body.row
-  tableProps.onRow = function onRow(record, index) {
-    // TODO: const original = tableProps.onRow
-    return { record, index } as any
-  }
-  return tableProps
-}
-
-export function resetDataSource<RecordType = Record<string, any>>(data: TableProps<RecordType>['dataSource']) {
-  return data.map(d => {
-    const keys = Object.keys(d).filter(key => key.endsWith('_old'))
-    for (const key of keys) {
-      d[key.replace('_old', '')] = d[key]
-    }
-    return d
-  })
 }
