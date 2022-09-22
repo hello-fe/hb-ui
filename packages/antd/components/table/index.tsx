@@ -140,7 +140,11 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
       handle.data = data as RecordType[]
       handle.forms = []
       handle.resetForms = () => {
-        setData(editComponents.resetData(data))
+        // 🤔 出于性能及编程复杂度考虑，不使用 FormAPI 同步 dataSource，直接在此更新
+        setData(resetDataSource(data))
+        for (const form of handle.forms) {
+          form.resetFields()
+        }
       }
     }
   }, [handle, data])
@@ -204,34 +208,49 @@ export default TableAntd
  */
 function editComponents<RecordType = Record<string, any>, FormValues = Record<string, any>>(
   args: {
+    handle: TableHandle<RecordType>,
     onFieldChange?: (args: { key: string; value: any; index: number }) => void,
-    handle?: TableHandle<RecordType>,
-  } = {},
+  },
 ): AntdTableProps<RecordType>['components'] {
   // 每行独立一个 FormInstance
 
   return {
     body: {
-      row: props => {
-        // TODO: 考虑支持外部传入 FormInstance 达到完全可控
-        const [form] = Form.useForm()
-        const {
-          className,
-          record,
-          index,
-          ...rest
-        } = props
-        if (args.handle?.forms && typeof index === /* <thead> is undefined */'number') {
-          // 抛出 FormInstance
-          args.handle.forms[index] = form
+      row: ({
+        record,
+        index,
+
+        className: CN,
+        ...rest
+      }) => {
+        const className = CN + ' tr-form-item'
+
+        if (typeof index === /* <thead> */'undefined') {
+          return <tr className={className} {...rest} />
         }
+
+        // TODO: 考虑支持外部传入 FormInstance 达到完全可控
+        const [form] = Form.useForm(args.handle.forms[index])
+        // 抛出 FormInstance
+        args.handle.forms[index] = form
+        const values = (rest.children as Record<string, any>[])
+          .map(child => child.props.additionalProps.column as TableColumn<RecordType>)
+          .filter(column => column.formItem)
+          /**
+           * Expected ")" but found "as"
+           *   at failureErrorWithLog (/node_modules/esbuild/lib/main.js:1615:15)
+           * .map(column => column.dataIndex /* Only support string *\/ as string)
+           */
+          .map(column => column.dataIndex as /* Only support string */ string)
+          .reduce((memo, key) => Object.assign(memo, { [key]: record[key] }), {})
+
         return (
           <Form
             form={form}
             component={false}
-            initialValues={record}
+            initialValues={values}
           >
-            <tr className={className + ' tr-form-item'} {...rest} />
+            <tr className={className} {...rest} />
           </Form>
         )
       },
@@ -241,7 +260,7 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
         index,
 
         children,
-        ...restProps
+        ...rest
       }) => {
         let childNode = children
 
@@ -258,7 +277,7 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
             } = formItem as TableColumn<RecordType>['formItem']
 
             // 当前列为 Form 元素，将原数据备份到 dataIndex_old 中
-            const backupKey = key + editComponents._old
+            const backupKey = key + '_old'
             if (!Object.keys(record).includes(backupKey)) {
               record[backupKey] = record[key]
             }
@@ -308,7 +327,7 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
           }
         }
 
-        return <td {...restProps}>{childNode}</td>
+        return <td {...rest}>{childNode}</td>
       },
     },
   }
@@ -333,12 +352,12 @@ editComponents.withOnRow = function withOnRow<RecordType = Record<string, any>>(
   }
   return tableProps
 }
-editComponents._old = '_old'
-editComponents.resetData = function resetData<RecordType = Record<string, any>>(data: TableProps<RecordType>['dataSource']) {
+
+export function resetDataSource<RecordType = Record<string, any>>(data: TableProps<RecordType>['dataSource']) {
   return data.map(d => {
-    const keys = Object.keys(d).filter(key => key.endsWith(editComponents._old))
+    const keys = Object.keys(d).filter(key => key.endsWith('_old'))
     for (const key of keys) {
-      d[key.replace(editComponents._old, '')] = d[key]
+      d[key.replace('_old', '')] = d[key]
     }
     return d
   })
