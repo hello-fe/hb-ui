@@ -27,11 +27,6 @@ export default () => {
   }
   
   const resetForm = () => {
-    for (const form of handle.forms) {
-      // 🐞 Not work!
-      // form.resetFields()
-    }
-    // hark
     handle.resetForms()
   }
 
