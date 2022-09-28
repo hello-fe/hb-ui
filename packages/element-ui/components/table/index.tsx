@@ -149,7 +149,11 @@ const TableElementUI: Component<
 
     // handle 挂载
     if (props.handle) {
-      props.handle.query = this.queryHandle
+      props.handle.query = (args = {}) => {
+          // 查询重置页码
+        args.pagination = { ...this.pagination2, currentPage: 1 }
+        this.queryHandle(args)
+      }
       props.handle.form = this.$refs[name] as ElForm
     }
 
@@ -165,7 +169,7 @@ const TableElementUI: Component<
     '$props.pagination': {
       handler(pagination) {
         // 合并传入参数
-        pagination !== undefined && (this.pagination2 = pagination)
+        pagination !== undefined && Object.assign(this.pagination2, pagination)
       },
       deep: true,
       immediate: true,
@@ -175,17 +179,18 @@ const TableElementUI: Component<
     onCurrentChange(current) {
       // TODO: 与 `queryHandle` 中的 `this.pagination2 = pagination2` 操作重复。如果 `query` 返回 fase 会造成操作“非幂等”
       this.pagination2.currentPage = current
-      this.queryHandle()
+      this.queryHandle({ payload: this._args?.payload })
     },
     onSizeChange(size) {
       // TODO: 与 `queryHandle` 中的 `this.pagination2 = pagination2` 操作重复。如果 `query` 返回 fase 会造成操作“非幂等”
       this.pagination2.pageSize = size
-      this.queryHandle()
+      this.queryHandle({ payload: this._args?.payload })
     },
     async queryHandle(args: Parameters<TableHandle['query']>[0] = {}) {
+      this._args = args
       const props = this.$props as TableProps
       const page2 = this.pagination2 as TablePagination
-
+      
       if (!props.query) return
       this.queryCount++
       const pagination = args.pagination ?? (page2 ? {
@@ -193,6 +198,9 @@ const TableElementUI: Component<
         pageSize: page2.pageSize,
         total: page2.total,
       } : undefined)
+
+      // Useless attr
+      delete pagination?.total
 
       this.loading = true
       const result = await props.query({
@@ -257,7 +265,7 @@ const TableElementUI: Component<
           background
           style="margin-top:15px;text-align:right;"
           layout="total, sizes, prev, pager, next, jumper"
-          page-sizes={[10, 20, 50, 100, 200, 500]}
+          page-sizes={[10, 20, 50, 100]}
           current-page={this.pagination2.currentPage}
           page-size={this.pagination2.pageSize}
           total={this.pagination2.total}
