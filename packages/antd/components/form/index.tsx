@@ -179,7 +179,7 @@ function renderFormItem<Values = Record<PropertyKey, any>>(
   )
 
   if (render) {
-    node = render(form.getFieldValue(item.name), form)
+    node = render(form.getFieldValue(item.name!), form)
   } else if (input) {
     node = defaultNode
   } else if (select) {
