@@ -118,9 +118,8 @@ const FormItemUI: Component<
   },
   mounted() {
     const props = this.$props as FormProps
-
     // handle 挂载
-    if (props.handle) props.handle = this.$refs[name]
+    if (props.handle) Object.assign(props.handle, this.$refs[name])
 
     // 还原缓存
     if (this.cacheKey) {
