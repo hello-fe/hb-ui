@@ -28,7 +28,7 @@ export interface TableProps<RecordType = Record<string, any>> extends Omit<AntdT
       input?: InputProps
       select?: SelectProps
       // render props(小)
-      render?: (...args: Parameters<AntdColumnType<RecordType>['render']>) => JSX.Element
+      render?: (...args: Parameters<Required<AntdColumnType<RecordType>>['render']>) => JSX.Element
     }
   })[]
   query?: (args: {
@@ -50,9 +50,9 @@ export interface TableProps<RecordType = Record<string, any>> extends Omit<AntdT
   }
 }
 
-export type TableColumn<RecordType = Record<string, any>> = TableProps<RecordType>['columns'][number]
-export type TableQuery<RecordType = Record<string, any>> = TableProps<RecordType>['query']
-export type TableHandle<RecordType = Record<string, any>> = TableProps<RecordType>['handle']
+export type TableColumn<RecordType = Record<string, any>> = Required<TableProps<RecordType>>['columns'][number]
+export type TableQuery<RecordType = Record<string, any>> = Required<TableProps<RecordType>>['query']
+export type TableHandle<RecordType = Record<string, any>> = Required<TableProps<RecordType>>['handle']
 
 // Table 的可编辑表格的表单组件样式(对齐单元格)
 function formatStyle() {
@@ -80,9 +80,9 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
 
   const [data, setData] = useState(dataSource)
   const [page, setPage] = useState<TablePaginationConfig | false>(props_pagination === false ? false : {
-    showQuickJumper: true,
-    pageSize: 10,
     current: 1,
+    pageSize: 10,
+    showQuickJumper: true,
     ...props_pagination,
   })
   const [loading, setLoading] = useState(false)
@@ -90,7 +90,7 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
   const queryArgs = useRef<Parameters<TableHandle['query']>[0]>() // query's args cache
   const mounted = useRef(false)
   const unMounted = useRef(false)
-  const editable = useMemo(() => columns.find(col => col.formItem), [columns])
+  const editable = useMemo(() => columns?.find(col => col.formItem), [columns])
 
   useLayoutEffect(() => {
     unMounted.current = false // 🚧-①
@@ -101,12 +101,16 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
   const queryHandle = async (args: Parameters<TableHandle['query']>[0] = {}) => {
     if (!query) return
     queryCount.current++
+    queryArgs.current = args
 
     const pagination = args.pagination ?? (typeof page === 'object' ? {
       current: page.current,
       pageSize: page.pageSize,
       total: page.total,
     } : undefined)
+
+    // Useless attr
+    delete pagination?.total
 
     setLoading(true)
     const result = await query({
@@ -135,17 +139,22 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
   // handle 挂载
   useEffect(() => {
     if (handle) {
-      handle.query = args => {
-        // Reset `pagination.current` to 1 when invoke `handle.query`
-        args.pagination = { current: 1, ...args.pagination }
-        queryArgs.current = args
+      handle.query = (args = {}) => {
+        if (page) {
+          args.pagination = {
+            // Reset `pagination.current` to 1 when invoke `handle.query`
+            current: 1,
+            pageSize: queryArgs.current?.pagination?.pageSize ?? page.pageSize,
+            ...args.pagination,
+          }
+        }
         queryHandle(args)
       }
       handle.data = data as RecordType[]
       handle.forms = []
       handle.resetForms = () => {
         // 🤔 出于性能及编程复杂度考虑，不使用 FormAPI 同步 dataSource，直接在此更新
-        setData(resetDataSource(data))
+        setData(resetDataSource(data!))
         for (const form of handle.forms) {
           form.resetFields()
         }
@@ -171,7 +180,7 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
 
   const tableProps: AntdTableProps<RecordType> = editComponents.withOnRow({
     size: 'small',
-    columns: editComponents.withOnCell(columns),
+    columns: editComponents.withOnCell(columns!),
     dataSource: data,
     onChange(pagination, filters, sorter, extra) {
       onChange?.(pagination, filters, sorter, extra)
@@ -192,7 +201,7 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
 
   return (
     <Table
-      components={editable ? editComponents({ handle }) : undefined}
+      components={editable ? editComponents({ handle: handle! }) : undefined}
       loading={loading}
       {...tableProps as any}
     />
@@ -226,7 +235,7 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
 
         className: CN,
         ...rest
-      }) => {
+      }: Record<string, any>) => {
         const className = CN + ' tr-form-item'
 
         if (typeof index === /* <thead> */'undefined') {
@@ -265,7 +274,7 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
 
         children,
         ...rest
-      }) => {
+      }: Record<string, any>) => {
         let childNode = children
 
         // title 列无 record
@@ -278,7 +287,7 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
               input,
               select,
               render,
-            } = formItem as TableColumn<RecordType>['formItem']
+            } = formItem as Required<TableColumn<RecordType>>['formItem']
 
             // 当前列为 Form 元素，将原数据备份到 dataIndex_old 中
             const backupKey = key + '_old'
@@ -357,10 +366,12 @@ editComponents.withOnRow = function withOnRow<RecordType = Record<string, any>>(
   return tableProps
 }
 
-export function resetDataSource<RecordType = Record<string, any>>(data: TableProps<RecordType>['dataSource']) {
+export function resetDataSource<RecordType = Record<string, any>>(data: Required<TableProps<RecordType>>['dataSource']) {
   return data.map(d => {
+    // @ts-ignore
     const keys = Object.keys(d).filter(key => key.endsWith('_old'))
     for (const key of keys) {
+      // @ts-ignore
       d[key.replace('_old', '')] = d[key]
     }
     return d
