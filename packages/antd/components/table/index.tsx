@@ -101,12 +101,16 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
   const queryHandle = async (args: Parameters<TableHandle['query']>[0] = {}) => {
     if (!query) return
     queryCount.current++
+    queryArgs.current = args
 
     const pagination = args.pagination ?? (typeof page === 'object' ? {
       current: page.current,
       pageSize: page.pageSize,
-      // total: page.total,
+      total: page.total,
     } : undefined)
+
+    // Useless attr
+    delete pagination?.total
 
     setLoading(true)
     const result = await query({
@@ -137,17 +141,20 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
     if (handle) {
       handle.query = (args = {}) => {
         if (page) {
-          // Reset `pagination.current` to 1 when invoke `handle.query`
-          args.pagination = { current: 1, pageSize: page.pageSize, ...args.pagination }
+          args.pagination = {
+            // Reset `pagination.current` to 1 when invoke `handle.query`
+            current: 1,
+            pageSize: queryArgs.current?.pagination?.pageSize ?? page.pageSize,
+            ...args.pagination,
+          }
         }
-        queryArgs.current = args
         queryHandle(args)
       }
       handle.data = data as RecordType[]
       handle.forms = []
       handle.resetForms = () => {
         // 🤔 出于性能及编程复杂度考虑，不使用 FormAPI 同步 dataSource，直接在此更新
-        setData(resetDataSource(data))
+        setData(resetDataSource(data!))
         for (const form of handle.forms) {
           form.resetFields()
         }
