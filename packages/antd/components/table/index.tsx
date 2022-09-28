@@ -136,6 +136,8 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
   useEffect(() => {
     if (handle) {
       handle.query = args => {
+        // Reset `pagination.current` to 1 when invoke `handle.query`
+        args.pagination = { current: 1, ...args.pagination }
         queryArgs.current = args
         queryHandle(args)
       }
