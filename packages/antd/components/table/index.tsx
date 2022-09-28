@@ -81,6 +81,8 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
   const [data, setData] = useState(dataSource)
   const [page, setPage] = useState<TablePaginationConfig | false>(props_pagination === false ? false : {
     showQuickJumper: true,
+    pageSize: 10,
+    current: 1,
     ...props_pagination,
   })
   const [loading, setLoading] = useState(false)
