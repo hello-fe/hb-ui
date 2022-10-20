@@ -201,7 +201,7 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
 
   return (
     <Table
-      components={editable ? editComponents({ handle: handle! }) : undefined}
+      components={editable ? editComponents({ handle }) : undefined}
       loading={loading}
       {...tableProps as any}
     />
@@ -221,7 +221,7 @@ export default TableAntd
  */
 function editComponents<RecordType = Record<string, any>, FormValues = Record<string, any>>(
   args: {
-    handle: TableHandle<RecordType>,
+    handle?: TableHandle<RecordType>,
     onFieldChange?: (args: { key: string; value: any; index: number }) => void,
   },
 ): AntdTableProps<RecordType>['components'] {
@@ -243,9 +243,11 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
         }
 
         // TODO: 考虑支持外部传入 FormInstance 达到完全可控
-        const [form] = Form.useForm(args.handle.forms[index])
-        // 抛出 FormInstance
-        args.handle.forms[index] = form
+        const [form] = Form.useForm(args.handle?.forms[index])
+        if (args.handle) {
+          // 抛出 FormInstance
+          args.handle.forms[index] = form
+        }
         const values = (rest.children as Record<string, any>[])
           .map(child => child.props.additionalProps.column as TableColumn<RecordType>)
           .filter(column => column.formItem)
