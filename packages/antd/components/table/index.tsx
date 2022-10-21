@@ -151,7 +151,6 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
         queryHandle(args)
       }
       handle.data = data as RecordType[]
-      handle.forms = []
       handle.resetForms = () => {
         // 🤔 出于性能及编程复杂度考虑，不使用 FormAPI 同步 dataSource，直接在此更新
         setData(resetDataSource(data!))
@@ -244,7 +243,8 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
 
         // TODO: 考虑支持外部传入 FormInstance 达到完全可控
         const [form] = Form.useForm(args.handle?.forms?.[index])
-        if (args.handle?.forms) {
+        if (args.handle) {
+          args.handle.forms ??= []
           // 抛出 FormInstance
           args.handle.forms[index] = form
         }
