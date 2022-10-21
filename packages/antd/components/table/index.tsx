@@ -243,8 +243,8 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
         }
 
         // TODO: 考虑支持外部传入 FormInstance 达到完全可控
-        const [form] = Form.useForm(args.handle?.forms[index])
-        if (args.handle) {
+        const [form] = Form.useForm(args.handle?.forms?.[index])
+        if (args.handle?.forms) {
           // 抛出 FormInstance
           args.handle.forms[index] = form
         }
