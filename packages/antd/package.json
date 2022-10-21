@@ -1,6 +1,6 @@
 {
   "name": "@hb-ui/antd",
-  "version": "4.2.3",
+  "version": "4.2.4",
   "packageManager": "pnpm@7.0.0",
   "description": "基于 antd 二次封装的一些常用组件",
   "main": "es/index.js",
