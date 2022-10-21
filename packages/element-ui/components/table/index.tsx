@@ -55,7 +55,7 @@ export interface TableProps<RowType = Record<PropertyKey, any>> extends Partial<
         options: (OptionRecord & VNodeData & Partial<ElOption>)[]
       }
       // render props(小)
-      render?: (args: ({ key: string } & Parameters<TableColumn<RowType>['render']>[0])) => JSX_ELEMENT
+      render?: (args: ({ key: string } & Parameters<Required<TableColumn<RowType>>['render']>[0])) => JSX_ELEMENT
     }
 
     tooltip?: VNodeData & {
@@ -101,9 +101,9 @@ export interface TableProps<RowType = Record<PropertyKey, any>> extends Partial<
 }
 
 export type TableColumn<RowType = Record<PropertyKey, any>> = TableProps<RowType>['columns'][number]
-export type tableData<RowType = Record<PropertyKey, any>> = TableProps<RowType>['data'][number]
-export type TableQuery<RowType = Record<PropertyKey, any>> = TableProps<RowType>['query']
-export type TablePagination = Pick<TableProps['pagination'], 'currentPage' | 'pageSize' | 'total'>
+export type tableData<RowType = Record<PropertyKey, any>> = Required<TableProps<RowType>>['data'][number]
+export type TableQuery<RowType = Record<PropertyKey, any>> = Required<TableProps<RowType>>['query']
+export type TablePagination = Pick<NonNullable<TableProps['pagination']>, 'currentPage' | 'pageSize' | 'total'>
 export type TableHandle<RowType = Record<PropertyKey, any>> = TableProps<RowType>['handle']
 
 const name = 'hb-ui-form-table'
@@ -150,7 +150,7 @@ const TableElementUI: Component<
     // handle 挂载
     if (props.handle) {
       props.handle.query = (args = {}) => {
-          // 查询重置页码
+        // 查询重置页码
         args.pagination = { ...this.pagination2, currentPage: 1 }
         this.queryHandle(args)
       }
@@ -190,7 +190,7 @@ const TableElementUI: Component<
       this._args = args
       const props = this.$props as TableProps
       const page2 = this.pagination2 as TablePagination
-      
+
       if (!props.query) return
       this.queryCount++
       const pagination = args.pagination ?? (page2 ? {
