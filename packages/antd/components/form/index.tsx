@@ -25,6 +25,9 @@ import type { SwitchProps } from 'antd/es/switch'
 import type { RowProps } from 'antd/es/row'
 import type { ColProps } from 'antd/es/col'
 
+// ## 设计原则
+// 1. Form.Item 应该使用 render props(小) 代替 children
+
 /**
  * TODO:
  * 1. 缓存功能
