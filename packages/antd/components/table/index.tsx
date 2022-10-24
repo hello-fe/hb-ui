@@ -28,7 +28,7 @@ export interface TableProps<RecordType = Record<string, any>> extends Omit<AntdT
       input?: InputProps
       select?: SelectProps
       // render props(小)
-      render?: (...args: Parameters<Required<AntdColumnType<RecordType>>['render']>) => JSX.Element
+      render?: (...args: Parameters<Required<AntdColumnType<RecordType>>['render']>) => React.ReactNode
     }
   })[]
   query?: (args: {
