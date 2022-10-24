@@ -248,22 +248,23 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
           // 抛出 FormInstance
           args.handle.forms[index] = form
         }
-        const values = (rest.children as Record<string, any>[])
-          .map(child => child.props.additionalProps.column as TableColumn<RecordType>)
-          .filter(column => column.formItem)
-          /**
-           * Expected ")" but found "as"
-           *   at failureErrorWithLog (/node_modules/esbuild/lib/main.js:1615:15)
-           * .map(column => column.dataIndex /* Only support string *\/ as string)
-           */
-          .map(column => column.dataIndex as /* Only support string */ string)
-          .reduce((memo, key) => Object.assign(memo, { [key]: record[key] }), {})
+        // TODO: additionalProps 在添加 rowSelection 属性后变成 undefined
+        // const values = (rest.children as Record<string, any>[])
+        //   .map(child => child.props.additionalProps.column as TableColumn<RecordType>)
+        //   .filter(column => column.formItem)
+        //   /**
+        //    * Expected ")" but found "as"
+        //    *   at failureErrorWithLog (/node_modules/esbuild/lib/main.js:1615:15)
+        //    * .map(column => column.dataIndex /* Only support string *\/ as string)
+        //    */
+        //   .map(column => column.dataIndex as /* Only support string */ string)
+        //   .reduce((memo, key) => Object.assign(memo, { [key]: record[key] }), {})
 
         return (
           <Form
             form={form}
             component={false}
-            initialValues={values}
+            initialValues={record}
           >
             <tr className={className} {...rest} />
           </Form>
