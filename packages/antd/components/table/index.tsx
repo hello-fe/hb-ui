@@ -90,6 +90,7 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
   const queryArgs = useRef<Parameters<TableHandle['query']>[0]>() // query's args cache
   const mounted = useRef(false)
   const unMounted = useRef(false)
+  const refTimer = useRef<number>()
   const editable = useMemo(() => columns?.find(col => col.formItem), [columns])
 
   useLayoutEffect(() => {
@@ -163,7 +164,9 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
 
   // init
   useEffect(() => {
-    queryHandle()
+    refTimer.current = setTimeout(queryHandle, 199)
+    // React 工程渲染抖动
+    return () => clearTimeout(refTimer.current)
   }, [])
 
   // componentDidMount
