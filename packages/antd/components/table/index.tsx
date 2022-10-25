@@ -28,7 +28,7 @@ export interface TableProps<RecordType = Record<string, any>> extends Omit<AntdT
       input?: InputProps
       select?: SelectProps
       // render props(小)
-      render?: (...args: Parameters<Required<AntdColumnType<RecordType>>['render']>) => JSX.Element
+      render?: (...args: Parameters<Required<AntdColumnType<RecordType>>['render']>) => React.ReactNode
     }
   })[]
   query?: (args: {
@@ -90,6 +90,7 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
   const queryArgs = useRef<Parameters<TableHandle['query']>[0]>() // query's args cache
   const mounted = useRef(false)
   const unMounted = useRef(false)
+  const refTimer = useRef<number>()
   const editable = useMemo(() => columns?.find(col => col.formItem), [columns])
 
   useLayoutEffect(() => {
@@ -163,7 +164,9 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
 
   // init
   useEffect(() => {
-    queryHandle()
+    refTimer.current = setTimeout(queryHandle, 199)
+    // React 工程渲染抖动
+    return () => clearTimeout(refTimer.current)
   }, [])
 
   // componentDidMount
@@ -249,7 +252,7 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
           args.handle.forms[index] = form
         }
         // TODO: additionalProps 在添加 rowSelection 属性后变成 undefined
-        // const values = (rest.children as Record<string, any>[])
+        // const initialValues = (rest.children as Record<string, any>[])
         //   .map(child => child.props.additionalProps.column as TableColumn<RecordType>)
         //   .filter(column => column.formItem)
         //   /**
@@ -264,6 +267,7 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
           <Form
             form={form}
             component={false}
+            // TODO: use initialValues instead record
             initialValues={record}
           >
             <tr className={className} {...rest} />
