@@ -25,6 +25,9 @@ import type { SwitchProps } from 'antd/es/switch'
 import type { RowProps } from 'antd/es/row'
 import type { ColProps } from 'antd/es/col'
 
+// ## 设计原则
+// 1. Form.Item 应该使用 render props(小) 代替 children
+
 /**
  * TODO:
  * 1. 缓存功能
@@ -43,20 +46,20 @@ export interface FormProps<Values = Record<PropertyKey, any>> extends AntdFormPr
       col?: ColProps
 
       // render props(小)
-      render?: (value: any, form: FormInstance<Values>) => JSX.Element
+      render?: (value: any, form: FormInstance<Values>) => React.ReactNode
     })
     // render function(大)
-    | ((index: number, form: FormInstance<Values>) => JSX.Element)
+    | ((index: number, form: FormInstance<Values>) => React.ReactNode)
   )[]
   /** 预留给 [提交/重置] 的位置 */
   lastItem?:
   | (AntdFormItemProps & {
     col?: ColProps
     // render props(小)
-    render?: (nodes: JSX.Element[], form: FormInstance<Values>) => (JSX.Element | JSX.Element[])
+    render?: (nodes: React.ReactNode[], form: FormInstance<Values>) => React.ReactNode
   })
   // render function(大)
-  | ((nodes: JSX.Element[], form: FormInstance<Values>) => (JSX.Element | JSX.Element[]))
+  | ((nodes: React.ReactNode[], form: FormInstance<Values>) => React.ReactNode)
   onSubmit?: (values: Values, form: FormInstance<Values>) => void
   row?: RowProps
   col?: ColProps
@@ -157,7 +160,7 @@ function renderFormItem<Values = Record<PropertyKey, any>>(
   form: FormInstance<Values>,
   item: FormItemProps<Values>,
   index: number,
-): JSX.Element {
+): React.ReactNode {
   // never used, for ts check
   if (typeof item === 'function') return item(index, form)
 
@@ -173,7 +176,7 @@ function renderFormItem<Values = Record<PropertyKey, any>>(
     ...restItemProps
   } = item
 
-  let node: JSX.Element
+  let node: React.ReactNode
   const defaultNode = (
     <Input allowClear placeholder={`请输入${item.label || ''}`} {...input} />
   )
