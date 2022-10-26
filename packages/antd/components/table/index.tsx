@@ -242,7 +242,10 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
         }
 
         // TODO: 考虑支持外部传入 FormInstance 达到完全可控
-        const [form] = Form.useForm(args.handle?.forms?.[index])
+        const [form] = Form.useForm(
+          // 如果使用缓存会在表格删除时,造成老数据滞留 BUG 🐞
+          // args.handle?.forms?.[index]
+        )
         if (args.handle) {
           args.handle.forms ??= []
           // 抛出 FormInstance
