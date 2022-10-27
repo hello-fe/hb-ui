@@ -337,7 +337,14 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
                 <Form.Item name={key} {...formItemProps}>
                   <Select
                     allowClear
+                    showSearch
                     placeholder='请选择'
+                    filterOption={(input, option) => {
+                      const reg = new RegExp(input)
+                      const res = (option?.label && reg.exec(option.label as string)) ||
+                        (option?.value && reg.exec(option.value as string))
+                      return !!res
+                    }}
                     onChange={(value, option) => {
                       onChange?.(value, option)
                       record[key] /* 软更新 🚧-② */ = value

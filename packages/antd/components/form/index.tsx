@@ -187,7 +187,18 @@ function renderFormItem<Values = Record<PropertyKey, any>>(
     node = defaultNode
   } else if (select) {
     node = (
-      <Select allowClear placeholder={`请选择${item.label || ''}`} {...select} />
+      <Select
+        allowClear
+        showSearch
+        placeholder={`请选择${item.label || ''}`}
+        filterOption={(input, option) => {
+          const reg = new RegExp(input)
+          const res = (option?.label && reg.exec(option.label as string)) ||
+            (option?.value && reg.exec(option.value as string))
+          return !!res
+        }}
+        {...select}
+      />
     )
   } else if (datePicker) {
     node = (
