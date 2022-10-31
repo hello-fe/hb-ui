@@ -197,6 +197,7 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
         payload: queryArgs.current?.payload,
       })
     },
+    rowKey: (_, index) => String(index), // Expect to pass from props!
     pagination: page,
     ...rest,
   })
