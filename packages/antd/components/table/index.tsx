@@ -21,15 +21,19 @@ import type {
 } from 'antd/es/table'
 
 // 🚧-①: 屏蔽 React.StrictMode 副作用
+// 🐞-①: 使用 render 实现的动态 Form.Item 会在表格增加、减少行时造成 Form 数据丢失！
+//       如果需要一个 cell 渲染多个 Form 组件，考虑使用多个相邻 cell + style 的方式实现，可以保障 Form 与 Table 字段一一对应！
+//       渲染多个 Form 组件 Demo: 
 
 export interface TableProps<RecordType = Record<string, any>> extends Omit<AntdTableProps<RecordType>, 'columns'> {
   columns?: (AntdColumnType<RecordType> & {
     formItem?: FormItemProps & {
-      input?: InputProps
-      select?: SelectProps
-      // render props(小)
-      render?: (...args: Parameters<Required<AntdColumnType<RecordType>>['render']>) => React.ReactNode
+      input?: InputProps | ((args: { form: FormInstance, record: RecordType, index: number }) => InputProps | void | null | undefined)
+      select?: SelectProps | ((args: { form: FormInstance, record: RecordType, index: number }) => SelectProps | void | null | undefined)
+      // 🐞-①: render props(小)
+      render?: (args: { form: FormInstance, record: RecordType, index: number }) => React.ReactNode
     }
+    // 🐞-①: render function(大) - Consider use `render` instead.
   })[]
   query?: (args: {
     /** 请求次数，当不想自动发起首次请求时可以判断 count==1 返回 undefined 打断请求 - 内部维护 */
@@ -247,7 +251,8 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
 
         // TODO: 考虑支持外部传入 FormInstance 达到完全可控
         const [form] = Form.useForm(
-          // 如果使用缓存会在表格删除时,造成老数据滞留 BUG 🐞
+          // 2022-10-26 如果使用缓存会在表格删除时,造成老数据滞留 BUG 🐞
+          // 2022-11-02 表格删除 row 时可以根据 dataSource 长度裁剪掉多余的 forms 避开缓存问题，但即便使用了缓存并无性能优化
           // args.handle?.forms?.[index]
         )
         if (args.handle) {
@@ -295,11 +300,19 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
 
           if (formItem) {
             const {
-              input,
-              select,
+              input: input2,
+              select: select2,
               render,
               ...formItemProps
-            } = formItem as Required<TableColumn<RecordType>>['formItem']
+            } = formItem
+            const cbArgs = {
+              form: args.handle?.forms[index]!,
+              record,
+              index,
+            }
+            // 返回 void 即视为条件渲染
+            const input = typeof input2 === 'function' ? input2(cbArgs) : input2
+            const select = typeof select2 === 'function' ? select2(cbArgs) : select2
 
             // 当前列为 Form 元素，将原数据备份到 dataIndex_old 中
             const backupKey = key + '_old'
@@ -310,7 +323,7 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
             if (render) {
               childNode = (
                 <Form.Item name={key} {...formItemProps}>
-                  {render(record[key], record, index)}
+                  {render(cbArgs)}
                 </Form.Item>
               )
             } else if (input) {
