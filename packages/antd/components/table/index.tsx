@@ -365,22 +365,25 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
   }
 }
 editComponents.withOnCell = function onCell<RecordType = Record<string, any>>(columns: TableColumn<RecordType>[]): typeof columns {
-  return columns.map(column => ({
-    ...column,
+  return columns.map(column => {
+    const original = column.onCell
     // 透传至 components.body.cell
-    onCell: (record, index) => ({
-      // TODO: const original = column.onCell
-      column,
-      record,
-      index,
-    } as any),
-  }))
+    column.onCell = function onCell(record, index) {
+      return {
+        column,
+        record,
+        index,
+        ...original?.(record, index)
+      } as any
+    }
+    return column
+  })
 }
 editComponents.withOnRow = function withOnRow<RecordType = Record<string, any>>(tableProps: TableProps<RecordType>): typeof tableProps {
+  const original = tableProps.onRow
   // Passed into components.body.row
   tableProps.onRow = function onRow(record, index) {
-    // TODO: const original = tableProps.onRow
-    return { record, index } as any
+    return { record, index, ...original?.(record, index) } as any
   }
   return tableProps
 }
