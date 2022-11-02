@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, Space, Tooltip } from 'antd'
+import { DefaultOptionType } from 'antd/lib/select'
 import {
   Table,
   TableProps,
   TableHandle,
+  TableColumn,
 } from 'root/components'
 
 export interface RecordType {
@@ -25,7 +27,7 @@ export default () => {
   const clickViewData = () => {
     console.log(handle.data)
   }
-  
+
   const resetForm = () => {
     handle.resetForms()
   }
@@ -64,26 +66,35 @@ export default () => {
           >{age}</Tooltip>
         ),
       },
+      // 条件渲染
       {
-        title: '性别',
+        title: <span style={{ color: '#1890ff' }}>性别(条件渲染)</span>,
         dataIndex: 'gender',
-        // render: gender => gender === 1 ? '男' : '女',
         formItem: {
-          select: {
-            options: [
-              { label: '男', value: 1 },
-              { label: '女', value: 0 },
-            ],
+          input: args => args.index % 2 ? {} : null,
+          select: ({ form, record, index }) => {
+            // 如果 options 需要与其他字段联动，在 callback Function 中配合 hooks 实现，且 cell 单元隔离
+            const [options, setOptions] = useState<DefaultOptionType[]>()
+            useEffect(() => {
+              if (!options) {
+                setOptions([
+                  { label: '男', value: 1 },
+                  { label: '女', value: 0 },
+                ])
+              }
+            }, [options])
+            return index % 2 ? null : { options }
           },
           rules: [{ required: true, message: '请选择性别！' }],
         },
         width: 140,
       },
-      {
-        title: '时间',
-        dataIndex: 'date',
-        render: date => new Date(date).toLocaleString(),
-      },
+      // 多表单组件
+      ...renderFormItem({
+        title: '多表单组件',
+        key1: 'key1',
+        key2: 'key2',
+      }),
       {
         title: '操作',
         dataIndex: '操作',
@@ -107,4 +118,43 @@ export default () => {
       <Table {...tableProps} />
     </>
   )
+}
+
+function renderFormItem(args: {
+  title: string
+  key1: string
+  key2: string
+  width?: number
+}) {
+  const {
+    title,
+    key1,
+    key2,
+    width = 170,
+  } = args
+  return [
+    {
+      title: <span style={{ color: '#1890ff' }}>{title}</span>,
+      dataIndex: key2,
+      width: width + 8 * 2,
+      formItem: {
+        style: { paddingTop: 40 },
+        input: {},
+      },
+    },
+    {
+      className: 'p-0 w-0',
+      dataIndex: key1,
+      width: 0,
+      formItem: {
+        style: {
+          position: 'absolute',
+          top: 8,
+          right: 'calc(100% + 8px)',
+          width,
+        },
+        select: { options: [{ label: 'foo', value: 'foo' }] },
+      },
+    },
+  ] as TableColumn<RecordType>[]
 }
