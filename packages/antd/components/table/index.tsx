@@ -23,7 +23,7 @@ import type {
 // 🚧-①: 屏蔽 React.StrictMode 副作用
 // 🐞-①: 使用 render 实现的动态 Form.Item 会在表格增加、减少行时造成 Form 数据丢失！可以通过 🚧-② 绕开！
 //       如果需要一个 cell 渲染多个 Form 组件，考虑使用多个相邻 cell + style 的方式实现，可以保障 Form 与 Table 字段一一对应！
-//       渲染多个 Form 组件 Demo: https://github.com/hello-fe/hb-ui/blob/0015d8601a40af30bc2a5a4160177af22573053d/packages/antd/view/table-edit/index.tsx#L92-L97
+//       渲染多个 Form 组件 Demo: https://github.com/hello-fe/hb-ui/blob/main/packages/antd/view/table-edit/index.tsx
 
 export interface TableProps<RecordType = Record<string, any>> extends Omit<AntdTableProps<RecordType>, 'columns'> {
   columns?: (AntdColumnType<RecordType> & {
