@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Space, Tooltip } from 'antd'
+import { Button, Form, Input, Row, Space, Switch, Tooltip } from 'antd'
 import { DefaultOptionType } from 'antd/lib/select'
 import {
   Table,
@@ -14,6 +14,8 @@ export interface RecordType {
   age: number
   gender: 0 | 1
   date: number
+  render_switch?: boolean
+  render_input?: string
 }
 
 export default () => {
@@ -68,7 +70,7 @@ export default () => {
       },
       // 条件渲染
       {
-        title: <span style={{ color: '#1890ff' }}>性别(条件渲染)</span>,
+        title: '性别(条件渲染)',
         dataIndex: 'gender',
         formItem: {
           input: args => args.index % 2 ? {} : null,
@@ -89,12 +91,34 @@ export default () => {
         },
         width: 140,
       },
-      // 多表单组件
+      // 多表单组件-样式实现
       ...renderFormItem({
-        title: '多表单组件',
+        title: '多表单组件-样式实现',
         key1: 'key1',
         key2: 'key2',
       }),
+      // 多表单组件-自定义 render
+      {
+        title: '多表单组件-自定义 render',
+        dataIndex: 'formItem-render',
+        formItem: {},
+        render(text, record, index) {
+          return <Row>
+            <Form.Item name='render_switch'>
+              <Switch onChange={val => {
+                // 🚨 同步更新！
+                record.render_switch = val
+              }} />
+            </Form.Item>
+            <Form.Item name='render_input'>
+              <Input onChange={ev => {
+                // 🚨 同步更新！
+                record.render_input = ev.target.value
+              }} />
+            </Form.Item>
+          </Row>
+        },
+      },
       {
         title: '操作',
         dataIndex: '操作',
@@ -134,7 +158,7 @@ function renderFormItem(args: {
   } = args
   return [
     {
-      title: <span style={{ color: '#1890ff' }}>{title}</span>,
+      title,
       dataIndex: key2,
       width: width + 8 * 2,
       formItem: {
