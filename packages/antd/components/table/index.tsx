@@ -305,7 +305,6 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
               render,
               ...formItemProps
             } = formItem
-            console.log(record);
             const cbArgs = {
               form: args.handle?.forms[index]!,
               record,
