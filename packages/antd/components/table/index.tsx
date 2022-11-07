@@ -94,7 +94,7 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
   const queryArgs = useRef<Parameters<TableHandle['query']>[0]>() // query's args cache
   const mounted = useRef(false)
   const unMounted = useRef(false)
-  const refTimer = useRef<number>()
+  const refTimer = useRef<NodeJS.Timeout>()
   const editable = useMemo(() => columns?.find(col => col.formItem), [columns])
 
   useLayoutEffect(() => {

@@ -11,4 +11,7 @@ export default defineConfig({
       { find: 'root', replacement: __dirname },
     ],
   },
+  server: {
+    host: '0.0.0.0'
+  }
 })

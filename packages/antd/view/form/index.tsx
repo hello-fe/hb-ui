@@ -11,8 +11,13 @@ export default () => {
     console.log(values, form)
   }
 
+  const clickReset: FormProps['clickReset'] = (values, form) => {
+    console.log(values)
+  }
+
   const formProps: FormProps = {
     onSubmit,
+    clickReset,
     initialValues: { name: '阿宁' },
     items: [
       {

@@ -61,6 +61,7 @@ export interface FormProps<Values = Record<PropertyKey, any>> extends AntdFormPr
   // render function(大)
   | ((nodes: React.ReactNode[], form: FormInstance<Values>) => React.ReactNode)
   onSubmit?: (values: Values, form: FormInstance<Values>) => void
+  clickReset?: (values: Values, form: FormInstance<Values>) => void
   row?: RowProps
   col?: ColProps
 }
@@ -97,7 +98,7 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     items,
     lastItem,
     onSubmit,
-    onReset,
+    clickReset,
     form: propsForm,
     className,
     row,
@@ -115,10 +116,21 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     }
   }
 
+  const onReset = async () => {
+    try {
+      form.resetFields()
+      const values = await form.validateFields()
+      // 和原生onReset名字冲突改为clickReset
+      clickReset?.(values, form)
+    } catch (error) {
+      console.warn(error)
+    }
+  }
+
   const renderLastItem = () => {
     const lastItemNodes = [
       <Button key='last-1' type='primary' onClick={clickSubmit}>提交</Button>,
-      <Button key='last-2' style={{ marginLeft: 10 }} onClick={() => form.resetFields()}>重置</Button>,
+      <Button key='last-2' style={{ marginLeft: 10 }} onClick={onReset}>重置</Button>,
     ]
     if (typeof lastItem === 'function') return lastItem(lastItemNodes, form)
     const { col: lastCol, render, ...formItemProps } = lastItem || {}
