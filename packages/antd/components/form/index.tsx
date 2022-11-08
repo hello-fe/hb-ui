@@ -61,7 +61,7 @@ export interface FormProps<Values = Record<PropertyKey, any>> extends AntdFormPr
   // render function(大)
   | ((nodes: React.ReactNode[], form: FormInstance<Values>) => React.ReactNode)
   onSubmit?: (values: Values, form: FormInstance<Values>) => void
-  clickReset?: (values: Values, form: FormInstance<Values>) => void
+  onFormReset?: (values: Values, form: FormInstance<Values>) => void
   row?: RowProps
   col?: ColProps
 }
@@ -98,7 +98,7 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     items,
     lastItem,
     onSubmit,
-    clickReset,
+    onFormReset,
     form: propsForm,
     className,
     row,
@@ -116,12 +116,12 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     }
   }
 
-  const onReset = async () => {
+  const clickReset = async () => {
     try {
       form.resetFields()
       const values = await form.validateFields()
-      // 和原生onReset名字冲突改为clickReset
-      clickReset?.(values, form)
+      // 和原生onReset名字冲突改为onFormReset
+      onFormReset?.(values, form)
     } catch (error) {
       console.warn(error)
     }
@@ -130,7 +130,7 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
   const renderLastItem = () => {
     const lastItemNodes = [
       <Button key='last-1' type='primary' onClick={clickSubmit}>提交</Button>,
-      <Button key='last-2' style={{ marginLeft: 10 }} onClick={onReset}>重置</Button>,
+      <Button key='last-2' style={{ marginLeft: 10 }} onClick={clickReset}>重置</Button>,
     ]
     if (typeof lastItem === 'function') return lastItem(lastItemNodes, form)
     const { col: lastCol, render, ...formItemProps } = lastItem || {}
