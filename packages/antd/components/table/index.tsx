@@ -25,6 +25,10 @@ import type {
 //       如果需要一个 cell 渲染多个 Form 组件，考虑使用多个相邻 cell + style 的方式实现，可以保障 Form 与 Table 字段一一对应！
 //       渲染多个 Form 组件 Demo: https://github.com/hello-fe/hb-ui/blob/main/packages/antd/view/table-edit/index.tsx
 
+// column.formItem vs column.render
+// 使用 render 函数实现的 Form 元素比 formItem 配置出来的性能高些
+// antd 自带的 render 通过 useMemo 优化过 https://github.com/react-component/table/blob/HEAD/src/Cell/index.tsx#L151-L198
+
 export interface TableProps<RecordType = Record<string, any>> extends Omit<AntdTableProps<RecordType>, 'columns'> {
   columns?: (AntdColumnType<RecordType> & {
     formItem?: FormItemProps & {
