@@ -91,6 +91,7 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
     current: 1,
     pageSize: 10,
     showQuickJumper: true,
+    showSizeChanger: true,
     ...props_pagination,
   })
   const [loading, setLoading] = useState(false)
@@ -98,7 +99,7 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
   const queryArgs = useRef<Parameters<TableHandle['query']>[0]>() // query's args cache
   const mounted = useRef(false)
   const unMounted = useRef(false)
-  const refTimer = useRef<NodeJS.Timeout>()
+  const refTimer = useRef<any>() // NodeJS.Timeout 不一定会有
   const editable = useMemo(() => columns?.find(col => col.formItem), [columns])
 
   useLayoutEffect(() => {
