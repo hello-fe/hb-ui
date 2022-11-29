@@ -18,9 +18,11 @@ export default () => {
   const formProps: FormProps = {
     onSubmit,
     onFormReset,
-    // 开启 URL 缓存，仅在 hash 路由下有效！！！
     cache: {
-      moment: ['date'],
+      format(params) {
+        delete params.date // 去掉时间字段(需要 moment 格式化)
+        return params
+      },
     },
     initialValues: { name: '阿宁' },
     items: [
