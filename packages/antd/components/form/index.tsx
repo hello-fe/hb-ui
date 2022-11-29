@@ -111,16 +111,14 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     form: propsForm,
     className,
     cache = {},
-    initialValues,
     row,
     col = colDefault,
     ...restFormProps
   } = props
   const [form] = Form.useForm<Values>(propsForm)
-  const cacheKey = cache.key = 'form-data'
-  let initValues = initialValues
+  const cacheKey = cache.key ?? 'form-data'
   if (cache) {
-    let params = JSONparse(getUrlParamsString.asJSON()[cacheKey])
+    let params = getUrlParamsString() ? JSONparse(getUrlParamsString.asJSON()[cacheKey]) : null
     if (params && Object.keys(params).length) {
       for (const [key, val] of Object.entries(params)) {
         if (cache.moment?.includes(key)) {
@@ -134,8 +132,12 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
       if (cache.format) {
         params = cache.format(params)
       }
-      // url 缓存优先级高于用户 initialValues
-      initValues = params
+      // url 缓存优先级更高
+      if (params == null) {
+        form.resetFields()
+      } else {
+        form.setFieldsValue(params)
+      }
     }
   }
 
@@ -191,7 +193,6 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     <Form
       className={['hb-ui-form', className].filter(Boolean).join(' ')}
       form={form}
-      initialValues={initValues}
       colon={false}
       labelCol={{ span: 7 }}
       wrapperCol={{ span: 17 }}
@@ -292,7 +293,7 @@ function JSONparse(str: string) {
   try {
     return JSON.parse(str)
   } catch (error) {
-    console.warn(`[JSONparse] error:\n${str}`)
+    console.warn(error)
     return null
   }
 }
@@ -312,8 +313,8 @@ getUrlParamsString.asJSON = function () {
 function cacheParams(key: string, data: Record<string, any>) {
   const dict: Record<string, any> = {}
   for (const [k, v] of Object.entries(data)) {
-    if (Array.isArray(v) && !v.length) break
-    if (v === '' || v == null) break
+    if (Array.isArray(v) && !v.length) continue
+    if (v === '' || v == null) continue
     // 只保留有效条件
     dict[k] = v
   }
