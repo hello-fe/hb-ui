@@ -21,14 +21,14 @@
     "@ant-design/icons": "~4.7.0",
     "@types/react": "18.0.17",
     "@types/react-dom": "18.0.6",
-    "@vitejs/plugin-react": "~2.0.0",
-    "antd": "~4.22.4",
-    "moment": "~2.29.4",
+    "@vitejs/plugin-react": "~2.2.0",
+    "antd": "4.22.4",
+    "moment": "2.29.4",
     "react": "16.14.0",
     "react-dom": "16.14.0",
-    "react-router-dom": "~6.3.0",
-    "typescript": "~4.7.4",
-    "vite": "~3.0.6"
+    "react-router-dom": "6.3.0",
+    "typescript": "4.7.4",
+    "vite": "~3.2.4"
   },
   "files": [
     "components",
