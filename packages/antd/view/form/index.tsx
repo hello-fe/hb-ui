@@ -1,5 +1,5 @@
+import React from 'react'
 import { Input } from 'antd'
-import React, { useState } from 'react'
 import {
   Form,
   FormProps,
@@ -11,13 +11,17 @@ export default () => {
     console.log(values, form)
   }
 
-  const clickReset: FormProps['clickReset'] = (values, form) => {
+  const onFormReset: FormProps['onFormReset'] = (values, form) => {
     console.log(values)
   }
 
   const formProps: FormProps = {
     onSubmit,
-    clickReset,
+    onFormReset,
+    // 开启 URL 缓存，仅在 hash 路由下有效！！！
+    cache: {
+      moment: ['date'],
+    },
     initialValues: { name: '阿宁' },
     items: [
       {

@@ -11,6 +11,7 @@ import {
   Row,
   Col,
 } from 'antd'
+import moment from 'moment'
 import type {
   FormInstance,
   FormProps as AntdFormProps,
@@ -62,6 +63,14 @@ export interface FormProps<Values = Record<PropertyKey, any>> extends AntdFormPr
   | ((nodes: React.ReactNode[], form: FormInstance<Values>) => React.ReactNode)
   onSubmit?: (values: Values, form: FormInstance<Values>) => void
   onFormReset?: (values: Values, form: FormInstance<Values>) => void
+  /** 表单条件缓存 */
+  cache?: {
+    key?: string,
+    /** moment 表单字段 key */
+    moment?: string[],
+    /** 外部控制回填参数，返回 undefined | null 会丢弃缓存 */
+    format?: (params: Record<string, any>) => typeof params | void
+  }
   row?: RowProps
   col?: ColProps
 }
@@ -101,16 +110,43 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     onFormReset,
     form: propsForm,
     className,
+    cache = {},
+    initialValues,
     row,
     col = colDefault,
     ...restFormProps
   } = props
   const [form] = Form.useForm<Values>(propsForm)
+  const cacheKey = cache.key = 'form-data'
+  let initValues = initialValues
+  if (cache) {
+    let params = JSONparse(getUrlParamsString.asJSON()[cacheKey])
+    if (params && Object.keys(params).length) {
+      for (const [key, val] of Object.entries(params)) {
+        if (cache.moment?.includes(key)) {
+          if (Array.isArray(val)) { // RangePicker
+            params[key] = val.map(v => moment(v))
+          } else { // DatePicker
+            params[key] = moment(val as string)
+          }
+        }
+      }
+      if (cache.format) {
+        params = cache.format(params)
+      }
+      // url 缓存优先级高于用户 initialValues
+      initValues = params
+    }
+  }
 
   const clickSubmit = async () => {
     try {
       const values = await form.validateFields()
-      onSubmit?.(values, form)
+      if (onSubmit) {
+        onSubmit(values, form)
+        // TODO: onSubmit 返回 false 显示的打断缓存，适用 Form 外的校验场景
+        cache && cacheParams(cacheKey, values as Record<string, any>)
+      }
     } catch (error) {
       console.warn(error)
     }
@@ -120,8 +156,11 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     try {
       form.resetFields()
       const values = await form.validateFields()
-      // 和原生onReset名字冲突改为onFormReset
-      onFormReset?.(values, form)
+      if (onFormReset) {
+        // 和原生 onReset 名字冲突改为 onFormReset
+        onFormReset(values, form)
+        cache && cacheParams(cacheKey, values as Record<string, any>)
+      }
     } catch (error) {
       console.warn(error)
     }
@@ -152,6 +191,7 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     <Form
       className={['hb-ui-form', className].filter(Boolean).join(' ')}
       form={form}
+      initialValues={initValues}
       colon={false}
       labelCol={{ span: 7 }}
       wrapperCol={{ span: 17 }}
@@ -247,3 +287,57 @@ function renderFormItem<Values = Record<PropertyKey, any>>(
 }
 
 export default FormAntd
+
+function JSONparse(str: string) {
+  try {
+    return JSON.parse(str)
+  } catch (error) {
+    console.warn(`[JSONparse] error:\n${str}`)
+    return null
+  }
+}
+
+// 获取参数
+function getUrlParamsString() {
+  // e.g.
+  //   http://www.foo.com/index.html?abc=123/#/hash - ?在前
+  //   http://www.foo.com/index.html/#/hash?abc=123 - #在前
+  return location.href.split('?')[1]?.split('#')[0]?.replace('/', '');
+}
+getUrlParamsString.asJSON = function () {
+  return Object.fromEntries(new URLSearchParams(getUrlParamsString()))
+}
+
+// 设置缓存
+function cacheParams(key: string, data: Record<string, any>) {
+  const dict: Record<string, any> = {}
+  for (const [k, v] of Object.entries(data)) {
+    if (Array.isArray(v) && !v.length) break
+    if (v === '' || v == null) break
+    // 只保留有效条件
+    dict[k] = v
+  }
+  const params = getUrlParamsString.asJSON()
+  const { [key]: /* 剔除旧缓存 */_, ...rest } = params
+  const querystring = new URLSearchParams({
+    // 合并原有的 querystring
+    ...rest,
+    ...(Object.keys(dict).length > 0
+      ? { [key]: JSON.stringify(dict) }
+      : undefined),
+  }).toString()
+  const oldQuerystring = getUrlParamsString()
+
+  // 取出 url 路径部分
+  let urlPath = location.href.replace(location.origin, '')
+  if (querystring && oldQuerystring) {
+    urlPath = urlPath.replace(oldQuerystring, querystring)
+  } else if (querystring) {
+    urlPath = `${urlPath}?${querystring}`
+  } else if (oldQuerystring) {
+    // 重置表单，清空缓存
+    urlPath = urlPath.replace(`?${oldQuerystring}`, '')
+  }
+
+  history.replaceState({/* 透传至 popstate 事件 event.state */ }, 'title', urlPath)
+}
