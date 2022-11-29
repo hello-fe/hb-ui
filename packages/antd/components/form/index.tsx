@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from 'react'
+import React, { useEffect } from 'react'
 import {
   Form,
   Input,
@@ -65,9 +65,8 @@ export interface FormProps<Values = Record<PropertyKey, any>> extends AntdFormPr
   onFormReset?: (values: Values, form: FormInstance<Values>) => void
   /** 表单条件缓存 */
   cache?: {
+    /** @default "form-data" */
     key?: string,
-    /** moment 表单字段 key */
-    moment?: string[],
     /** 外部控制回填参数，返回 undefined | null 会丢弃缓存 */
     format?: (params: Record<string, any>) => typeof params | void
   }
@@ -90,11 +89,6 @@ function formateStyle() {
 }
 
 function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
-
-  useLayoutEffect(() => {
-    formateStyle()
-  }, [])
-
   /** @see https://ant.design/components/grid/#Col */
   const colDefault: ColProps = {
     sm: 24 / 1,  // ≥ 576px
@@ -117,29 +111,6 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
   } = props
   const [form] = Form.useForm<Values>(propsForm)
   const cacheKey = cache.key ?? 'form-data'
-  if (cache) {
-    let params = getUrlParamsString() ? JSONparse(getUrlParamsString.asJSON()[cacheKey]) : null
-    if (params && Object.keys(params).length) {
-      for (const [key, val] of Object.entries(params)) {
-        if (cache.moment?.includes(key)) {
-          if (Array.isArray(val)) { // RangePicker
-            params[key] = val.map(v => moment(v))
-          } else { // DatePicker
-            params[key] = moment(val as string)
-          }
-        }
-      }
-      if (cache.format) {
-        params = cache.format(params)
-      }
-      // url 缓存优先级更高
-      if (params == null) {
-        form.resetFields()
-      } else {
-        form.setFieldsValue(params)
-      }
-    }
-  }
 
   const clickSubmit = async () => {
     try {
@@ -188,6 +159,24 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
       </Col>
     )
   }
+
+  useEffect(() => {
+    formateStyle()
+
+    if (cache) {
+      let params = getUrlParamsString() ? JSONparse(getUrlParamsString.asJSON()[cacheKey]) : null
+      if (params && Object.keys(params).length) {
+        if (cache.format) {
+          params = cache.format(params)
+        }
+        if (params == null) {
+          form.resetFields() // 返回 null | undefined 清空表单
+        } else {
+          form.setFieldsValue(params)
+        }
+      }
+    }
+  }, [])
 
   return (
     <Form
@@ -286,6 +275,9 @@ function renderFormItem<Values = Record<PropertyKey, any>>(
     </Form.Item>
   )
 }
+
+FormAntd.useForm = Form.useForm
+FormAntd.useUrlParams = (): [Record<string, string>, string] => [getUrlParamsString.asJSON(), getUrlParamsString()]
 
 export default FormAntd
 
