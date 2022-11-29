@@ -23,7 +23,6 @@
     "@types/react-dom": "18.0.6",
     "@vitejs/plugin-react": "~2.2.0",
     "antd": "4.22.4",
-    "moment": "2.29.4",
     "react": "16.14.0",
     "react-dom": "16.14.0",
     "react-router-dom": "6.3.0",

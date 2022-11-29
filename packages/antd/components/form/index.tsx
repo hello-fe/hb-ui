@@ -11,7 +11,6 @@ import {
   Row,
   Col,
 } from 'antd'
-import moment from 'moment'
 import type {
   FormInstance,
   FormProps as AntdFormProps,
