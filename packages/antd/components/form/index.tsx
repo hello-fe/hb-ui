@@ -103,13 +103,13 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     onFormReset,
     form: propsForm,
     className,
-    cache = {},
+    cache,
     row,
     col = colDefault,
     ...restFormProps
   } = props
   const [form] = Form.useForm<Values>(propsForm)
-  const cacheKey = cache.key ?? 'form-data'
+  const cacheKey = cache?.key ?? 'form-data'
 
   const clickSubmit = async () => {
     try {
