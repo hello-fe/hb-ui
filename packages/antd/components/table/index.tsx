@@ -264,6 +264,8 @@ function editComponents<RecordType = Record<string, any>, FormValues = Record<st
           args.handle.forms ??= []
           // 抛出 FormInstance
           args.handle.forms[index] = form
+          // Remove unused FormInstance
+          args.handle.forms.length = index + 1
         }
         // TODO: additionalProps 在添加 rowSelection 属性后变成 undefined
         // const initialValues = (rest.children as Record<string, any>[])
