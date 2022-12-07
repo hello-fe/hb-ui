@@ -10,6 +10,7 @@ import {
   Input,
   Select,
   Table,
+  Tooltip,
 } from 'antd'
 import type { FormInstance, FormItemProps } from 'antd/es/form'
 import type { InputProps } from 'antd/es/input'
@@ -19,6 +20,7 @@ import type {
   TablePaginationConfig,
   TableProps as AntdTableProps,
 } from 'antd/es/table'
+import { TooltipProps } from 'antd/es/tooltip'
 
 // 🚧-①: 屏蔽 React.StrictMode 副作用
 // 🐞-①: 使用 render 实现的动态 Form.Item 会在表格增加、减少行时造成 Form 数据丢失！可以通过 🚧-② 绕开！
@@ -408,6 +410,8 @@ editComponents.withOnRow = function withOnRow<RecordType = Record<string, any>>(
   return tableProps
 }
 
+// -----------------------------------------------------------------------------
+
 export function resetDataSource<RecordType = Record<string, any>>(data: Required<TableProps<RecordType>>['dataSource']) {
   return data.map(d => {
     // @ts-ignore
@@ -418,4 +422,48 @@ export function resetDataSource<RecordType = Record<string, any>>(data: Required
     }
     return d
   })
+}
+
+/** Enhance Table's colum config */
+export function enhanceColumn<RecordType = unknown>(tablProps: Omit<TableProps<RecordType>, 'columns'> & {
+  columns: (TableColumn<RecordType> & {
+    tooltip?:
+    | Partial<TooltipProps>
+    | ((text: any, record: RecordType, index: number) => Partial<TooltipProps>)
+  })[]
+  columnWidth?: number
+}): typeof tablProps {
+  const { columnWidth = 147 } = tablProps
+
+  if (tablProps.columns?.length) {
+    for (const column of tablProps.columns) {
+      const original = column.render
+
+      // Tooltip
+      if (column.tooltip) {
+        column.render = (text, record, index) => {
+          const tooltip = typeof column.tooltip === 'function'
+            ? column.tooltip(text, record, index)
+            : column.tooltip
+          const node = original?.(text, record, index) ?? text
+          return (
+            <Tooltip title={node} {...tooltip}>
+              {/* Make sure the Tooltip box is centered. */}
+              <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{node}</div>
+            </Tooltip>
+          )
+        }
+      }
+
+      // Assign default colum width
+      column.width ??= columnWidth
+    }
+
+    // Assign default `scroll.x`
+    tablProps.scroll ??= {}
+    tablProps.scroll.x ??= tablProps.columns
+      .reduce((memo, col) => memo + (typeof col.width === 'number' ? col.width : columnWidth), 0)
+  }
+
+  return tablProps
 }
