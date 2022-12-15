@@ -239,6 +239,10 @@ function renderFormItem<Values = Record<PropertyKey, any>>(
           return !!res
         }}
         {...select}
+        options={select.options?.map(option => ({
+          ...option,
+          $raw: undefined, // $raw 为当前行数据 payload
+        }))}
       />
     )
   } else if (datePicker) {
