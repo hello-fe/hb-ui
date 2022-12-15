@@ -1,0 +1,34 @@
+{
+  "name": "@hb-ui/ant-design-vue",
+  "version": "0.1.0",
+  "packageManager": "pnpm@7.0.0",
+  "description": "基于 ant-design-vue 二次封装的一些常用组件",
+  "main": "es/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hello-fe/hb-ui.git",
+    "directory": "packages/ant-design-vue"
+  },
+  "scripts": {
+    "build": "rm -rf es && tsc --project tsconfig.build.json",
+    "dev": "vite",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "ant-design-vue": ">=3.0.0"
+  },
+  "devDependencies": {
+    "@ant-design/icons-vue": "6.1.0",
+    "@vitejs/plugin-vue": "4.0.0",
+    "@vitejs/plugin-vue-jsx": "3.0.0",
+    "ant-design-vue": "3.2.15",
+    "typescript": "4.7.4",
+    "vite": "~4.0.1",
+    "vue": "3.2.45",
+    "vue-router": "4.1.6"
+  },
+  "files": [
+    "components",
+    "es"
+  ]
+}
