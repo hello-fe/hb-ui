@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Form,
   Input,
@@ -11,6 +11,7 @@ import {
   Row,
   Col,
 } from 'antd'
+import { DownOutlined, UpOutlined } from '@ant-design/icons'
 import type {
   FormInstance,
   FormProps as AntdFormProps,
@@ -27,12 +28,6 @@ import type { ColProps } from 'antd/es/col'
 
 // ## 设计原则
 // 1. Form.Item 应该使用 render props(小) 代替 children
-
-/**
- * TODO:
- * 1. 缓存功能
- */
-
 export interface FormProps<Values = Record<PropertyKey, any>> extends AntdFormProps<Values> {
   items: (
     | (AntdFormItemProps & {
@@ -69,6 +64,11 @@ export interface FormProps<Values = Record<PropertyKey, any>> extends AntdFormPr
     /** 外部控制回填参数，返回 undefined | null 会丢弃缓存 */
     format?: (params: Record<string, any>) => typeof params | void
   }
+  /** 收起和展开 */
+  collapse?: {
+    /** @default 5 */
+    index?: number,
+  }
   row?: RowProps
   col?: ColProps
 }
@@ -104,12 +104,15 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     form: propsForm,
     className,
     cache,
+    collapse,
     row,
     col = colDefault,
     ...restFormProps
   } = props
   const [form] = Form.useForm<Values>(propsForm)
   const cacheKey = cache?.key ?? 'form-data'
+  const collapseIndex = collapse?.index ?? 5
+  const [isExpand, setIsExpand] = useState(false)
 
   const clickSubmit = async () => {
     try {
@@ -139,7 +142,17 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
   }
 
   const renderLastItem = () => {
+    const expandIcon = [<Button
+      key='last-0'
+      type="link"
+      size='small'
+      onClick={() => setIsExpand(!isExpand)}
+    >
+      {isExpand ? <><DownOutlined />展开</> : <><UpOutlined />收起</>}
+    </Button>]
+
     const lastItemNodes = [
+      ...collapse ? expandIcon : [],
       <Button key='last-1' type='primary' onClick={clickSubmit}>提交</Button>,
       <Button key='last-2' style={{ marginLeft: 10 }} onClick={clickReset}>重置</Button>,
     ]
@@ -158,6 +171,16 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
       </Col>
     )
   }
+
+  const renderAllItems = () => items.map((item, index) => {
+    const isHidden = isExpand && index >= collapseIndex;
+    if (typeof item === 'function') {
+      return isHidden ? <Col span={0} key={index}>{item(index, form)}</Col> : item(index, form)
+    }
+    return <Col {...(isHidden ? { span: 0 } : (item.col || col))} key={index}>
+      {renderFormItem(form, item, index)}
+    </Col>
+  })
 
   useEffect(() => {
     formateStyle()
@@ -187,10 +210,7 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
       {...restFormProps}
     >
       <Row {...row}>
-        {items.map((item, index) => typeof item === 'function'
-          ? item(index, form)
-          : <Col {...(item.col || col)} key={index}>{renderFormItem(form, item, index)}</Col>
-        )}
+        {renderAllItems()}
         {renderLastItem()}
       </Row>
     </Form>
@@ -298,7 +318,7 @@ function getUrlParamsString() {
   // e.g.
   //   http://www.foo.com/index.html?abc=123/#/hash - ?在前
   //   http://www.foo.com/index.html/#/hash?abc=123 - #在前
-  return location.href.split('?')[1]?.split('#')[0]?.replace('/', '');
+  return location.href.split('?')[1]?.split('#')[0]?.replace('/', '')
 }
 getUrlParamsString.asJSON = function () {
   return Object.fromEntries(new URLSearchParams(getUrlParamsString()))
