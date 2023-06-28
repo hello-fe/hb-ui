@@ -24,6 +24,9 @@ export default () => {
         return params
       },
     },
+    collapse: {
+      index: 4,
+    },
     initialValues: { name: '阿宁' },
     items: [
       {
