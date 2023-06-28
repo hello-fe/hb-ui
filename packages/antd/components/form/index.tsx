@@ -141,17 +141,17 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
   }
 
   const renderLastItem = () => {
-    const expandIcon = [<Button
+    const expandIcon = <Button
       key='last-0'
-      type="link"
+      type='link'
       size='small'
       onClick={() => setIsExpand(!isExpand)}
     >
       {!isExpand ? <>&#8595;展开</> : <>&#8593;收起</>}
-    </Button>]
+    </Button>
 
     const lastItemNodes = [
-      ...collapse ? expandIcon : [],
+      ...collapse ? [expandIcon] : [],
       <Button key='last-1' type='primary' onClick={clickSubmit}>提交</Button>,
       <Button key='last-2' style={{ marginLeft: 10 }} onClick={clickReset}>重置</Button>,
     ]
