@@ -11,7 +11,6 @@ import {
   Row,
   Col,
 } from 'antd'
-import { DownOutlined, UpOutlined } from '@ant-design/icons'
 import type {
   FormInstance,
   FormProps as AntdFormProps,
@@ -112,7 +111,7 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
   const [form] = Form.useForm<Values>(propsForm)
   const cacheKey = cache?.key ?? 'form-data'
   const collapseIndex = collapse?.index ?? 5
-  const [isExpand, setIsExpand] = useState(false)
+  const [isExpand, setIsExpand] = useState(true)
 
   const clickSubmit = async () => {
     try {
@@ -148,7 +147,7 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
       size='small'
       onClick={() => setIsExpand(!isExpand)}
     >
-      {isExpand ? <><DownOutlined />展开</> : <><UpOutlined />收起</>}
+      {!isExpand ? <>&#8595;展开</> : <>&#8593;收起</>}
     </Button>]
 
     const lastItemNodes = [
@@ -173,7 +172,7 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
   }
 
   const renderAllItems = () => items.map((item, index) => {
-    const isHidden = isExpand && index >= collapseIndex;
+    const isHidden = !isExpand && index >= collapseIndex;
     if (typeof item === 'function') {
       return isHidden ? <Col span={0} key={index}>{item(index, form)}</Col> : item(index, form)
     }
