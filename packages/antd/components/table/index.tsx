@@ -141,6 +141,8 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
       count: queryCount.current,
       pagination,
       payload: args.payload,
+      // TODO: remove type assert
+      changes: args.changes as any,
     })
     setLoading(false)
     if (!result) return // 打断请求 or 无效请求
