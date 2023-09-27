@@ -20,6 +20,11 @@ import type {
   TablePaginationConfig,
   TableProps as AntdTableProps,
 } from 'antd/es/table'
+import type {
+  FilterValue,
+  SorterResult,
+  TableCurrentDataSource,
+} from 'antd/es/table/interface'
 import { TooltipProps } from 'antd/es/tooltip'
 
 // 🚧-①: 屏蔽 React.StrictMode 副作用
@@ -48,6 +53,13 @@ export interface TableProps<RecordType = Record<string, any>> extends Omit<AntdT
     pagination?: Partial<Pick<TablePaginationConfig, 'current' | 'pageSize' | 'total'>>
     /** 来自 handle.query 透传 */
     payload?: any
+    /** Table 触发 change 透传 */
+    changes?: {
+      pagination: TablePaginationConfig
+      filters: Record<string, FilterValue | null>
+      sorter: SorterResult<RecordType> | SorterResult<RecordType[]>
+      extra: TableCurrentDataSource<RecordType>
+    }
   }) => Promise<({ data: RecordType[] } & Partial<Pick<TablePaginationConfig, 'current' | 'pageSize' | 'total'>>) | void>
   handle?: {
     query: (args?: Omit<Parameters<TableQuery<RecordType>>[0], 'count'>) => void
@@ -160,7 +172,8 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
             ...args.pagination,
           }
         }
-        queryHandle(args)
+        // TODO: remove type assert
+        queryHandle(args as any)
       }
       handle.data = data as RecordType[]
       handle.resetForms = () => {
@@ -206,6 +219,13 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
         pagination: { current, pageSize, total },
         // use last cache
         payload: queryArgs.current?.payload,
+        changes: {
+          pagination,
+          filters,
+          // TODO: remove type assert
+          sorter: sorter as Record<string, any>,
+          extra: extra as TableCurrentDataSource<Record<string, any>>,
+        },
       })
     },
     rowKey: (_, index) => String(index), // Expect to pass from props!
