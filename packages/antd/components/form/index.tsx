@@ -291,6 +291,9 @@ function renderFormItem<Values = Record<PropertyKey, any>>(
   return (
     <Form.Item
       key={index}
+      valuePropName={[
+        switch2,
+      ].some(Boolean) ? 'checked' : undefined}
       {...restItemProps}
     >
       {node}
