@@ -11,6 +11,7 @@ import {
   Row,
   Col,
 } from 'antd'
+import { ConfigContext } from 'antd/es/config-provider/context'
 import type {
   FormInstance,
   FormProps as AntdFormProps,
@@ -74,7 +75,7 @@ export interface FormProps<Values = Record<PropertyKey, any>> extends AntdFormPr
 
 export type FormItemProps<Values = Record<PropertyKey, any>> = FormProps<Values>['items'][number]
 
-function formateStyle() {
+function formatStyle(prefixCls:string = 'ant') {
   let id = 'hb-ui-form__style'
   const className = 'hb-ui-form'
   let oStyle = document.getElementById(id) as HTMLStyleElement
@@ -82,7 +83,7 @@ function formateStyle() {
 
   oStyle = document.createElement<'style'>('style')
   oStyle.id = id
-  oStyle.innerHTML = `.${className} .ant-picker { width: 100%; }`
+  oStyle.innerHTML = `.${className} .${prefixCls}-picker { width: 100%; }`
   document.head.appendChild(oStyle)
 }
 
@@ -108,6 +109,7 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
     col = colDefault,
     ...restFormProps
   } = props
+  const { getPrefixCls } = React.useContext(ConfigContext)
   const [form] = Form.useForm<Values>(propsForm)
   const cacheKey = cache?.key ?? 'form-data'
   const collapseIndex = collapse?.index ?? 5
@@ -182,7 +184,7 @@ function FormAntd<Values = Record<PropertyKey, any>>(props: FormProps<Values>) {
   })
 
   useEffect(() => {
-    formateStyle()
+    formatStyle(getPrefixCls())    
 
     if (cache) {
       let params = getUrlParamsString() ? JSONparse(getUrlParamsString.asJSON()[cacheKey]) : null
