@@ -12,6 +12,7 @@ import {
   Table,
   Tooltip,
 } from 'antd'
+import { ConfigContext } from 'antd/es/config-provider/context'
 import type { FormInstance, FormItemProps } from 'antd/es/form'
 import type { InputProps } from 'antd/es/input'
 import type { SelectProps } from 'antd/es/select'
@@ -77,7 +78,7 @@ export type TableQuery<RecordType = Record<string, any>> = Required<TableProps<R
 export type TableHandle<RecordType = Record<string, any>> = Required<TableProps<RecordType>>['handle']
 
 // Table 的可编辑表格的表单组件样式(对齐单元格)
-function formatStyle() {
+function formatStyle(prefixCls = 'ant') {
   const id = 'tr-form-item_style'
   const className = 'tr-form-item'
   let oStyle = document.getElementById(id) as HTMLStyleElement
@@ -85,7 +86,7 @@ function formatStyle() {
 
   oStyle = document.createElement<'style'>('style')
   oStyle.id = id
-  oStyle.innerHTML = `.${className} .ant-form-item { margin: 0; }`
+  oStyle.innerHTML = `.${className} .${prefixCls}-form-item { margin: 0; }`
   document.head.appendChild(oStyle)
 }
 
@@ -99,6 +100,7 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
     pagination: props_pagination,
     ...rest
   } = props
+  const { getPrefixCls } = React.useContext(ConfigContext)
 
   const [data, setData] = useState(dataSource)
   const [page, setPage] = useState<TablePaginationConfig | false>(props_pagination === false ? false : {
@@ -118,7 +120,7 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
 
   useLayoutEffect(() => {
     unMounted.current = false // 🚧-①
-    formatStyle()
+    formatStyle(getPrefixCls())
   }, [])
 
   // 请求
