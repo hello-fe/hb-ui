@@ -7,6 +7,7 @@ import {
   UserOutlined,
   VideoCameraOutlined,
 } from '@ant-design/icons'
+import { ConfigContext } from 'antd/es/config-provider'
 
 const { Header, Sider, Content } = Layout
 
@@ -14,6 +15,7 @@ const AppLayout = () => {
   const [collapsed, setCollapsed] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
+  const { getPrefixCls } = React.useContext(ConfigContext);
 
   return (
     <Layout style={{ height: '100%' }}>
@@ -81,7 +83,7 @@ const AppLayout = () => {
             backgroundColor: 'white',
           }}
         >
-          <h2>Hey here! 👋</h2>
+          <h2>Hey here! 👋{getPrefixCls()}</h2>
           <Divider />
           <Outlet />
         </Content>
