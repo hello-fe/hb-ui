@@ -92,6 +92,7 @@ export default = () => {
   const tableProps: TableProps = {
     columns: [],
     handle,
+    rowSelection: {} // 开启可选择
   }
 
   return (

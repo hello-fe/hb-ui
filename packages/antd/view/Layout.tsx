@@ -62,6 +62,14 @@ const AppLayout = () => {
                 onClick() {
                   navigate('/table')
                 },
+              },  
+              {
+                key: '/selection-table',
+                icon: <VideoCameraOutlined />,
+                label: 'Selection-table',
+                onClick() {
+                  navigate('/selection-table')
+                },
               },
               {
                 key: '/table-edit',

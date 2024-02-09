@@ -25,8 +25,10 @@ import type {
   FilterValue,
   SorterResult,
   TableCurrentDataSource,
+  TableRowSelection,
 } from 'antd/es/table/interface'
 import { TooltipProps } from 'antd/es/tooltip'
+import useTableSelections, { AntdTableSelectionResult } from './useSelections'
 
 // 🚧-①: 屏蔽 React.StrictMode 副作用
 // 🐞-①: 使用 render 实现的动态 Form.Item 会在表格增加、减少行时造成 Form 数据丢失！可以通过 🚧-② 绕开！
@@ -62,7 +64,9 @@ export interface TableProps<RecordType = Record<string, any>> extends Omit<AntdT
       extra: TableCurrentDataSource<RecordType>
     }
   }) => Promise<({ data: RecordType[] } & Partial<Pick<TablePaginationConfig, 'current' | 'pageSize' | 'total'>>) | void>
+  rowSelection?: Partial<TableRowSelection<RecordType> & { disabled: boolean | ((row: RecordType) => boolean) }>
   handle?: {
+    selection: AntdTableSelectionResult<RecordType>['action'] & AntdTableSelectionResult<RecordType>['state'],
     query: (args?: Omit<Parameters<TableQuery<RecordType>>[0], 'count'>) => void
     // React 单项数据流设计，遂抛出 dataSource
     data: RecordType[]
@@ -76,6 +80,8 @@ export interface TableProps<RecordType = Record<string, any>> extends Omit<AntdT
 export type TableColumn<RecordType = Record<string, any>> = Required<TableProps<RecordType>>['columns'][number]
 export type TableQuery<RecordType = Record<string, any>> = Required<TableProps<RecordType>>['query']
 export type TableHandle<RecordType = Record<string, any>> = Required<TableProps<RecordType>>['handle']
+
+const isObject = (any:any) => typeof any === 'object' && any !== null;
 
 // Table 的可编辑表格的表单组件样式(对齐单元格)
 function formatStyle(prefixCls = 'ant') {
@@ -98,6 +104,7 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
     query,
     onChange,
     pagination: props_pagination,
+    rowSelection: props_rowSelection,
     ...rest
   } = props
   const { getPrefixCls } = React.useContext(ConfigContext)
@@ -117,6 +124,10 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
   const unMounted = useRef(false)
   const refTimer = useRef<any>() // NodeJS.Timeout 不一定会有
   const editable = useMemo(() => columns?.find(col => col.formItem), [columns])
+  const { state: selection, action: selectionAction, rowSelection } = useTableSelections(
+    data as Readonly<RecordType>[],
+    { ...props_rowSelection, rowKey: rest.rowKey as any }
+  )
 
   useLayoutEffect(() => {
     unMounted.current = false // 🚧-①
@@ -187,8 +198,15 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
           form.resetFields()
         }
       }
+      if (isObject(props_rowSelection)) {
+        handle.selection = {
+          // 🤔 handle只是引用，无法承载 React State
+          ...selectionAction,
+          ...selection,
+        }
+      }
     }
-  }, [handle, data])
+  }, [handle, data, selection, selectionAction])
 
   // init
   useEffect(() => {
@@ -234,6 +252,7 @@ function TableAntd<RecordType = Record<string, any>, FormValues = Record<string,
     },
     rowKey: (_, index) => String(index), // Expect to pass from props!
     pagination: page,
+    rowSelection: isObject(props_rowSelection) ? rowSelection : undefined,
     ...rest,
   })
 
