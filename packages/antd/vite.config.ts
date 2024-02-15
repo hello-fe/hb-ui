@@ -11,6 +11,11 @@ export default defineConfig({
       { find: 'root', replacement: __dirname },
     ],
   },
+  css: {
+    preprocessorOptions: {
+      less: { javascriptEnabled: true },
+    },
+  },
   server: {
     host: '0.0.0.0'
   }
